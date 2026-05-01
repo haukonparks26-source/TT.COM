@@ -6,9 +6,9 @@ The customer-facing app does not show a sound library or training panel. Known s
 
 Diagnosed recordings and uploaded clips are stored locally in the browser so a customer can replay the exact sound for a mechanic. They are not uploaded anywhere by this static prototype.
 
-The vehicle selector stores year, make, and model locally and shows a starter list of common trouble spots for supported popular vehicles, with age-based fallback checks for other vehicles.
+The vehicle selector stores year, make, and model locally, checks 1996+ year/make/model combinations against the NHTSA vPIC vehicle database when online, and shows starter trouble spots with age-based fallback checks for other vehicles.
 
-The 3D blueprint uses the selected vehicle to switch between sedan, pickup, SUV, coupe, van, and EV forms. For example, selecting Ford and typing F-150 turns the blueprint into a pickup-style vehicle. Drag the blueprint to rotate it, or tap the hotspot buttons to highlight the likely problem area.
+The 3D blueprint uses the selected vehicle to switch between detailed model-specific blueprint approximations, including sedans, pickups, SUVs, coupes, vans, EVs, trucks, crossovers, and off-road forms. For example, selecting Ford and typing F-150 turns the blueprint into a more detailed F-Series-style pickup with grille, bed rails, wheel arches, and highlighted problem zones. Drag the blueprint to rotate it, or tap the hotspot buttons to highlight the likely problem area.
 
 The app also includes a local customer profile, VIN lookup, mechanic notes, photo/video attachments, a mechanic dashboard, report export, an owner manual finder, and a damaged-part photo page that builds replacement-part search links from the selected vehicle.
 

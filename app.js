@@ -6,6 +6,7 @@ const vehicleYearSelect = document.querySelector("#vehicleYearSelect");
 const vehicleMakeSelect = document.querySelector("#vehicleMakeSelect");
 const vehicleModelInput = document.querySelector("#vehicleModelInput");
 const modelSuggestions = document.querySelector("#modelSuggestions");
+const modelStatus = document.querySelector("#modelStatus");
 const engineFuelSelect = document.querySelector("#engineFuelSelect");
 const engineSpecInput = document.querySelector("#engineSpecInput");
 const engineAspirationSelect = document.querySelector("#engineAspirationSelect");
@@ -69,6 +70,9 @@ const recordingsDbName = "torquetune-recordings";
 const recordingsStoreName = "recordings";
 const vehicleStorageKey = "torquetune.vehicle.v1";
 const customerStorageKey = "torquetune.customer.v1";
+const verifiedModelCache = new Map();
+let modelLookupTimer = 0;
+let latestModelLookupKey = "";
 
 const blueprintSourceAreas = {
   unknown: "engine",
@@ -1301,7 +1305,7 @@ function createSignature(overrides = {}) {
 function populateVehicleYears() {
   const currentYear = new Date().getFullYear() + 1;
   vehicleYearSelect.innerHTML = '<option value="">Year</option>';
-  for (let year = currentYear; year >= 1980; year -= 1) {
+  for (let year = currentYear; year >= 1981; year -= 1) {
     const option = document.createElement("option");
     option.value = String(year);
     option.textContent = String(year);
@@ -1321,7 +1325,7 @@ function saveVehicle() {
   localStorage.setItem(vehicleStorageKey, JSON.stringify(getVehicle()));
   updateVehicleLogo();
   renderVehicleIssues();
-  updateModelSuggestions();
+  scheduleModelSuggestions();
   renderToolLinks();
   dispatchBlueprintVehicle();
 }
@@ -1393,10 +1397,98 @@ function getCustomer() {
   };
 }
 
-function updateModelSuggestions() {
+function scheduleModelSuggestions() {
+  window.clearTimeout(modelLookupTimer);
+  modelLookupTimer = window.setTimeout(updateModelSuggestions, 220);
+}
+
+async function updateModelSuggestions() {
   if (!modelSuggestions) return;
-  const models = vehicleModelCatalog[vehicleMakeSelect.value] || [];
+
+  const vehicle = getVehicle();
+  const fallbackModels = vehicleModelCatalog[vehicle.make] || [];
+
+  if (!vehicle.year || !vehicle.make || vehicle.make === "Other") {
+    renderModelOptions(fallbackModels);
+    setModelStatus(vehicle.make ? "Select a model year to verify this make." : "Choose a year and make to verify models.");
+    return;
+  }
+
+  if (Number(vehicle.year) < 1996) {
+    renderModelOptions(fallbackModels);
+    setModelStatus("Official model-list lookup works best for 1996+ vehicles. Use VIN/manual entry for older vehicles.");
+    return;
+  }
+
+  const lookupKey = `${vehicle.year}:${vehicle.make}`;
+  latestModelLookupKey = lookupKey;
+  const cachedModels = verifiedModelCache.get(lookupKey);
+
+  if (cachedModels) {
+    applyVerifiedModels(vehicle, cachedModels);
+    return;
+  }
+
+  renderModelOptions(fallbackModels);
+  setModelStatus("Checking official model list...");
+
+  try {
+    const models = await fetchNhtsaModels(vehicle.year, vehicle.make);
+    if (latestModelLookupKey !== lookupKey) return;
+    verifiedModelCache.set(lookupKey, models);
+    applyVerifiedModels(getVehicle(), models);
+  } catch {
+    if (latestModelLookupKey !== lookupKey) return;
+    setModelStatus("Could not reach NHTSA right now. Starter model list is still available.");
+  }
+}
+
+async function fetchNhtsaModels(year, make) {
+  const url = `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${encodeURIComponent(make)}/modelyear/${encodeURIComponent(year)}?format=json`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error("NHTSA model lookup failed.");
+  const data = await response.json();
+  const requestedMake = normalizeText(make);
+  const exactMakeResults = (data.Results || []).filter((item) => normalizeText(item.Make_Name || "") === requestedMake);
+  const models = exactMakeResults
+    .map((item) => titleCase(String(item.Model_Name || item.Model || "").trim()))
+    .filter(Boolean);
+  return [...new Set(models)].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+}
+
+function applyVerifiedModels(vehicle, models) {
+  renderModelOptions(models.length ? models : vehicleModelCatalog[vehicle.make] || []);
+
+  if (!models.length) {
+    setModelStatus("No official model list found for that year/make. You can still type the model manually.");
+    return;
+  }
+
+  if (!vehicle.model) {
+    setModelStatus(`${models.length} official models found for ${vehicle.year} ${vehicle.make}.`);
+    return;
+  }
+
+  const modelMatches = models.some((model) => modelsEquivalent(model, vehicle.model));
+  setModelStatus(
+    modelMatches
+      ? `Verified by NHTSA for ${vehicle.year} ${vehicle.make}.`
+      : `Model not found in NHTSA list for ${vehicle.year} ${vehicle.make}; check spelling, trim, or VIN.`
+  );
+}
+
+function renderModelOptions(models) {
   modelSuggestions.innerHTML = models.map((model) => `<option value="${escapeHtml(model)}"></option>`).join("");
+}
+
+function modelsEquivalent(a, b) {
+  const left = normalizeText(a).replace(/[^a-z0-9]/g, "");
+  const right = normalizeText(b).replace(/[^a-z0-9]/g, "");
+  return left === right || left.includes(right) || right.includes(left);
+}
+
+function setModelStatus(message) {
+  if (modelStatus) modelStatus.textContent = message;
 }
 
 function updateVehicleLogo() {

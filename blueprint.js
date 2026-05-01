@@ -10,6 +10,7 @@ let THREE = null;
 let currentBuildKey = "";
 let currentProfile;
 let hotspots = {};
+let issueZones = {};
 let activeArea = "engine";
 let rotationY = -0.45;
 let rotationX = 0.12;
@@ -197,6 +198,390 @@ const vehicleProfiles = {
   }
 };
 
+const modelSpecificProfiles = [
+  {
+    id: "ford-f150",
+    base: "pickup",
+    label: "Ford F-Series full-size pickup",
+    matches: ["fordf150", "fordf250", "fordf350", "fordfseries"],
+    overrides: {
+      cameraZ: 7.8,
+      body: [5.85, 0.66, 1.9],
+      bodyPos: [0, 0.36, 0],
+      hood: [1.64, 0.52, 1.66],
+      hoodPos: [1.96, 0.84, 0],
+      cabin: [1.42, 1.02, 1.52],
+      cabinPos: [0.42, 1.08, 0],
+      rear: [2.24, 0.46, 1.72],
+      rearPos: [-1.56, 0.8, 0],
+      wheelFrontX: 2.08,
+      wheelRearX: -2.15,
+      wheelZ: 1.04,
+      hotspots: {
+        engine: [1.95, 1.03, 0],
+        wheel: [2.08, 0.18, 1.14],
+        underbody: [-0.2, 0.14, 0],
+        transmission: [0.42, 0.5, 0],
+        steering: [0.98, 1.22, 0.64],
+        cabin: [0.42, 1.42, 0]
+      },
+      details: {
+        style: "full-size pickup",
+        grille: { height: 0.54, width: 1.38, y: 0.84, ribs: 5, blocky: true },
+        headlights: "stacked",
+        bedRails: true,
+        tailgate: true,
+        towHooks: true,
+        wheelArchScale: 1.12,
+        hoodRidges: 3
+      }
+    }
+  },
+  {
+    id: "chevy-silverado",
+    base: "pickup",
+    label: "Chevrolet Silverado truck",
+    matches: ["chevroletsilverado", "chevysilverado", "gmcsierra"],
+    overrides: {
+      cameraZ: 7.7,
+      body: [5.72, 0.64, 1.86],
+      hood: [1.58, 0.48, 1.64],
+      hoodPos: [1.92, 0.82, 0],
+      cabin: [1.46, 0.98, 1.48],
+      cabinPos: [0.42, 1.05, 0],
+      rear: [2.18, 0.44, 1.7],
+      rearPos: [-1.52, 0.78, 0],
+      wheelFrontX: 2.04,
+      wheelRearX: -2.08,
+      wheelZ: 1.02,
+      details: {
+        style: "full-size pickup",
+        grille: { height: 0.48, width: 1.44, y: 0.82, ribs: 4, crossbar: true },
+        headlights: "split",
+        bedRails: true,
+        tailgate: true,
+        wheelArchScale: 1.08,
+        hoodRidges: 2
+      }
+    }
+  },
+  {
+    id: "ram-1500",
+    base: "pickup",
+    label: "Ram full-size truck",
+    matches: ["ram1500", "ram2500", "ram3500", "dodgeram"],
+    overrides: {
+      cameraZ: 7.8,
+      body: [5.78, 0.68, 1.9],
+      hood: [1.66, 0.56, 1.68],
+      hoodPos: [1.98, 0.88, 0],
+      cabin: [1.4, 1.02, 1.5],
+      cabinPos: [0.38, 1.09, 0],
+      rear: [2.16, 0.46, 1.72],
+      rearPos: [-1.56, 0.81, 0],
+      wheelFrontX: 2.06,
+      wheelRearX: -2.12,
+      wheelZ: 1.04,
+      details: {
+        style: "full-size pickup",
+        grille: { height: 0.58, width: 1.34, y: 0.86, ribs: 3, blocky: true },
+        headlights: "wide",
+        bedRails: true,
+        tailgate: true,
+        wheelArchScale: 1.12,
+        hoodRidges: 2
+      }
+    }
+  },
+  {
+    id: "toyota-tacoma",
+    base: "pickup",
+    label: "midsize Toyota pickup",
+    matches: ["toyotatacoma", "toyotatundra"],
+    overrides: {
+      cameraZ: 7.35,
+      body: [5.42, 0.6, 1.76],
+      hood: [1.44, 0.45, 1.5],
+      hoodPos: [1.8, 0.78, 0],
+      cabin: [1.36, 0.94, 1.38],
+      cabinPos: [0.36, 1.03, 0],
+      rear: [2.02, 0.42, 1.58],
+      rearPos: [-1.36, 0.76, 0],
+      wheelFrontX: 1.9,
+      wheelRearX: -1.94,
+      wheelZ: 0.98,
+      details: {
+        style: "midsize pickup",
+        grille: { height: 0.46, width: 1.2, y: 0.8, ribs: 3 },
+        headlights: "angled",
+        bedRails: true,
+        tailgate: true,
+        wheelArchScale: 1.04,
+        hoodRidges: 2
+      }
+    }
+  },
+  {
+    id: "jeep-wrangler",
+    base: "suv",
+    label: "Jeep Wrangler off-road SUV",
+    matches: ["jeepwrangler"],
+    overrides: {
+      cameraZ: 6.9,
+      body: [4.32, 0.78, 1.72],
+      bodyPos: [0, 0.42, 0],
+      hood: [1.16, 0.42, 1.48],
+      hoodPos: [1.44, 0.86, 0],
+      cabin: [1.7, 1.18, 1.44],
+      cabinPos: [-0.18, 1.16, 0],
+      rear: [0.98, 0.9, 1.44],
+      rearPos: [-1.52, 1.02, 0],
+      wheelFrontX: 1.48,
+      wheelRearX: -1.55,
+      wheelZ: 1.0,
+      hotspots: {
+        engine: [1.42, 1.02, 0],
+        wheel: [1.48, 0.18, 1.08],
+        underbody: [-0.05, 0.16, 0],
+        transmission: [0.18, 0.54, 0],
+        steering: [0.62, 1.24, 0.6],
+        cabin: [-0.18, 1.5, 0]
+      },
+      details: {
+        style: "off-road SUV",
+        grille: { height: 0.52, width: 1.14, y: 0.88, ribs: 7 },
+        headlights: "round",
+        roofRails: false,
+        spareTire: true,
+        wheelArchScale: 1.2,
+        uprightCabin: true,
+        hoodRidges: 2
+      }
+    }
+  },
+  {
+    id: "toyota-rav4-crv",
+    base: "suv",
+    label: "compact crossover SUV",
+    matches: ["toyotarav4", "hondacrv", "fordescape", "nissanrogue", "hyundaitucson", "kiasportage", "subaruforester", "mazdacx5", "volkswagentiguan"],
+    overrides: {
+      cameraZ: 6.95,
+      body: [4.74, 0.72, 1.7],
+      hood: [1.18, 0.38, 1.46],
+      hoodPos: [1.46, 0.82, 0],
+      cabin: [2.18, 0.96, 1.44],
+      cabinPos: [-0.28, 1.06, 0],
+      rear: [0.96, 0.68, 1.42],
+      rearPos: [-1.72, 0.92, 0],
+      wheelFrontX: 1.58,
+      wheelRearX: -1.58,
+      wheelZ: 0.94,
+      details: {
+        style: "compact crossover",
+        grille: { height: 0.34, width: 1.18, y: 0.78, ribs: 3 },
+        headlights: "angled",
+        roofRails: true,
+        rearLiftgate: true,
+        wheelArchScale: 1.03,
+        hoodRidges: 2
+      }
+    }
+  },
+  {
+    id: "large-suv",
+    base: "suv",
+    label: "large SUV",
+    matches: ["fordexplorer", "fordexpedition", "chevytahoe", "chevroletsuburban", "gmcyukon", "toyotahighlander", "toyota4runner", "hondapilot", "nissanpathfinder", "jeepgrandcherokee", "bmwx5", "mercedesbenzgle"],
+    overrides: {
+      cameraZ: 7.25,
+      body: [5.12, 0.78, 1.86],
+      hood: [1.32, 0.44, 1.58],
+      hoodPos: [1.62, 0.88, 0],
+      cabin: [2.42, 1.08, 1.58],
+      cabinPos: [-0.34, 1.12, 0],
+      rear: [1.08, 0.78, 1.54],
+      rearPos: [-1.92, 0.98, 0],
+      wheelFrontX: 1.72,
+      wheelRearX: -1.78,
+      wheelZ: 1.02,
+      details: {
+        style: "large SUV",
+        grille: { height: 0.44, width: 1.28, y: 0.84, ribs: 4 },
+        headlights: "wide",
+        roofRails: true,
+        rearLiftgate: true,
+        wheelArchScale: 1.08,
+        hoodRidges: 2
+      }
+    }
+  },
+  {
+    id: "subaru-outback",
+    base: "suv",
+    label: "wagon crossover",
+    matches: ["subaruoutback", "volvov60"],
+    overrides: {
+      cameraZ: 6.85,
+      body: [4.95, 0.62, 1.68],
+      bodyPos: [0, 0.36, 0],
+      hood: [1.18, 0.34, 1.44],
+      hoodPos: [1.52, 0.76, 0],
+      cabin: [2.72, 0.86, 1.42],
+      cabinPos: [-0.38, 0.98, 0],
+      rear: [0.92, 0.54, 1.38],
+      rearPos: [-1.84, 0.82, 0],
+      wheelFrontX: 1.54,
+      wheelRearX: -1.68,
+      wheelZ: 0.92,
+      details: {
+        style: "wagon crossover",
+        grille: { height: 0.3, width: 1.08, y: 0.72, ribs: 3 },
+        headlights: "angled",
+        roofRails: true,
+        longRoof: true,
+        wheelArchScale: 0.98,
+        hoodRidges: 1
+      }
+    }
+  },
+  {
+    id: "tesla-model-3-y",
+    base: "ev",
+    label: "Tesla smooth-body EV",
+    matches: ["teslamodel3", "teslamodely", "teslamodels", "teslamodelx", "rivian"],
+    overrides: {
+      cameraZ: 6.75,
+      body: [4.58, 0.52, 1.62],
+      hood: [1.04, 0.24, 1.34],
+      hoodPos: [1.46, 0.6, 0],
+      cabin: [2.28, 0.8, 1.3],
+      cabinPos: [-0.24, 0.92, 0],
+      rear: [1.02, 0.32, 1.32],
+      rearPos: [-1.56, 0.62, 0],
+      wheelFrontX: 1.56,
+      wheelRearX: -1.56,
+      wheelZ: 0.9,
+      details: {
+        style: "electric fastback",
+        grille: { hidden: true },
+        headlights: "thinbar",
+        panoramicGlass: true,
+        batterySkateboard: true,
+        smoothNose: true,
+        wheelArchScale: 0.98
+      }
+    }
+  },
+  {
+    id: "honda-civic-accord",
+    base: "sedan",
+    label: "Honda sedan",
+    matches: ["hondacivic", "hondaaccord"],
+    overrides: {
+      cameraZ: 6.45,
+      body: [4.42, 0.48, 1.54],
+      hood: [1.22, 0.32, 1.34],
+      hoodPos: [1.5, 0.66, 0],
+      cabin: [1.78, 0.7, 1.18],
+      cabinPos: [-0.2, 0.88, 0],
+      rear: [1.08, 0.32, 1.32],
+      rearPos: [-1.52, 0.62, 0],
+      wheelFrontX: 1.52,
+      wheelRearX: -1.54,
+      wheelZ: 0.84,
+      details: {
+        style: "compact sedan",
+        grille: { height: 0.26, width: 1.08, y: 0.67, ribs: 2 },
+        headlights: "thinbar",
+        slopedRoof: true,
+        wheelArchScale: 0.96,
+        hoodRidges: 1
+      }
+    }
+  },
+  {
+    id: "toyota-camry-corolla",
+    base: "sedan",
+    label: "Toyota sedan",
+    matches: ["toyotacamry", "toyotacorolla", "lexuses", "lexusis"],
+    overrides: {
+      cameraZ: 6.5,
+      body: [4.5, 0.5, 1.56],
+      hood: [1.18, 0.34, 1.36],
+      hoodPos: [1.48, 0.68, 0],
+      cabin: [1.86, 0.72, 1.2],
+      cabinPos: [-0.22, 0.9, 0],
+      rear: [1.1, 0.34, 1.34],
+      rearPos: [-1.54, 0.64, 0],
+      wheelFrontX: 1.52,
+      wheelRearX: -1.56,
+      wheelZ: 0.85,
+      details: {
+        style: "midsize sedan",
+        grille: { height: 0.32, width: 1.18, y: 0.68, ribs: 4 },
+        headlights: "angled",
+        slopedRoof: true,
+        wheelArchScale: 0.98,
+        hoodRidges: 2
+      }
+    }
+  },
+  {
+    id: "mustang-camaro-sports",
+    base: "coupe",
+    label: "muscle or sports coupe",
+    matches: ["fordmustang", "chevroletcamaro", "chevycamaro", "chevroletcorvette", "dodgechallenger", "dodgecharger", "mazdamiata", "toyotasupra", "subarubrz"],
+    overrides: {
+      cameraZ: 6.55,
+      body: [4.6, 0.46, 1.62],
+      hood: [1.58, 0.34, 1.42],
+      hoodPos: [1.48, 0.64, 0],
+      cabin: [1.22, 0.58, 1.14],
+      cabinPos: [-0.42, 0.78, 0],
+      rear: [1.18, 0.34, 1.38],
+      rearPos: [-1.56, 0.58, 0],
+      wheelFrontX: 1.56,
+      wheelRearX: -1.62,
+      wheelZ: 0.88,
+      details: {
+        style: "long-hood performance coupe",
+        grille: { height: 0.3, width: 1.18, y: 0.64, ribs: 3 },
+        headlights: "wide",
+        slopedRoof: true,
+        hoodRidges: 3,
+        wheelArchScale: 1.0
+      }
+    }
+  },
+  {
+    id: "minivan",
+    base: "van",
+    label: "minivan",
+    matches: ["hondaodyssey", "toyotasienna", "chryslerpacifica", "dodgecaravan", "kiacarnival"],
+    overrides: {
+      cameraZ: 7.05,
+      body: [5.05, 0.76, 1.82],
+      hood: [0.92, 0.34, 1.52],
+      hoodPos: [1.86, 0.82, 0],
+      cabin: [3.2, 1.06, 1.54],
+      cabinPos: [-0.34, 1.08, 0],
+      rear: [0.88, 0.86, 1.52],
+      rearPos: [-1.9, 1.0, 0],
+      wheelFrontX: 1.62,
+      wheelRearX: -1.72,
+      wheelZ: 0.98,
+      details: {
+        style: "minivan",
+        grille: { height: 0.32, width: 1.12, y: 0.78, ribs: 3 },
+        headlights: "wide",
+        slidingDoorTrack: true,
+        longRoof: true,
+        wheelArchScale: 0.98
+      }
+    }
+  }
+];
+
 const hotspotColors = {
   engine: 0xf06f61,
   wheel: 0xf0c35f,
@@ -210,6 +595,33 @@ currentProfile = vehicleProfiles.sedan;
 
 function normalize(value) {
   return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+function cloneValue(value) {
+  if (Array.isArray(value)) return value.map(cloneValue);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, child]) => [key, cloneValue(child)]));
+  }
+  return value;
+}
+
+function mergeProfile(base, overrides = {}) {
+  const profile = cloneValue(base);
+  Object.entries(overrides).forEach(([key, value]) => {
+    if (
+      value
+      && typeof value === "object"
+      && !Array.isArray(value)
+      && profile[key]
+      && typeof profile[key] === "object"
+      && !Array.isArray(profile[key])
+    ) {
+      profile[key] = mergeProfile(profile[key], value);
+    } else {
+      profile[key] = cloneValue(value);
+    }
+  });
+  return profile;
 }
 
 function readVehicleFromControls() {
@@ -228,27 +640,43 @@ function readVehicleFromControls() {
 function vehicleLabel(vehicle, type) {
   const name = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(" ") || "Generic vehicle";
   const engine = [vehicle.engine, vehicle.aspiration, vehicle.fuel, vehicle.drivetrain].filter(Boolean).join(", ");
-  return `${name} ${type.name} blueprint${engine ? ` - ${engine}` : ""}`;
+  const style = type.details?.style || type.name;
+  return `${name} detailed ${style} blueprint${engine ? ` - ${engine}` : ""}`;
+}
+
+function profileTypeForText(text) {
+  if (text.includes("f150") || text.includes("f250") || text.includes("f350") || text.includes("silverado") || text.includes("sierra") || text.includes("ram") || text.includes("tacoma") || text.includes("tundra") || text.includes("ranger") || text.includes("colorado") || text.includes("canyon") || text.includes("ridgeline") || text.includes("frontier") || text.includes("maverick")) {
+    return "pickup";
+  }
+  if (text.includes("wrangler") || text.includes("bronco") || text.includes("explorer") || text.includes("escape") || text.includes("expedition") || text.includes("edge") || text.includes("rav4") || text.includes("4runner") || text.includes("highlander") || text.includes("crv") || text.includes("pilot") || text.includes("passport") || text.includes("rogue") || text.includes("pathfinder") || text.includes("murano") || text.includes("forester") || text.includes("outback") || text.includes("crosstrek") || text.includes("santafe") || text.includes("tucson") || text.includes("sorento") || text.includes("sportage") || text.includes("tahoe") || text.includes("suburban") || text.includes("yukon") || text.includes("terrain") || text.includes("acadia") || text.includes("x3") || text.includes("x5")) {
+    return "suv";
+  }
+  if (text.includes("odyssey") || text.includes("sienna") || text.includes("pacifica") || text.includes("caravan") || text.includes("transit") || text.includes("sprinter")) {
+    return "van";
+  }
+  if (text.includes("mustang") || text.includes("camaro") || text.includes("corvette") || text.includes("challenger") || text.includes("charger") || text.includes("miata") || text.includes("brz") || text.includes("86") || text.includes("supra")) {
+    return "coupe";
+  }
+  if (text.includes("tesla") || text.includes("model3") || text.includes("modely") || text.includes("models") || text.includes("modelx") || text.includes("electric")) {
+    return "ev";
+  }
+  return "sedan";
 }
 
 function classifyVehicle(vehicle) {
   const text = normalize(`${vehicle.make} ${vehicle.model} ${vehicle.fuel}`);
-  if (text.includes("f150") || text.includes("f250") || text.includes("f350") || text.includes("silverado") || text.includes("sierra") || text.includes("ram") || text.includes("tacoma") || text.includes("tundra") || text.includes("ranger") || text.includes("colorado") || text.includes("canyon") || text.includes("ridgeline") || text.includes("frontier") || text.includes("maverick")) {
-    return vehicleProfiles.pickup;
-  }
-  if (text.includes("wrangler") || text.includes("bronco") || text.includes("explorer") || text.includes("escape") || text.includes("expedition") || text.includes("edge") || text.includes("rav4") || text.includes("4runner") || text.includes("highlander") || text.includes("crv") || text.includes("pilot") || text.includes("passport") || text.includes("rogue") || text.includes("pathfinder") || text.includes("murano") || text.includes("forester") || text.includes("outback") || text.includes("crosstrek") || text.includes("santafe") || text.includes("tucson") || text.includes("sorento") || text.includes("sportage") || text.includes("tahoe") || text.includes("suburban") || text.includes("yukon") || text.includes("terrain") || text.includes("acadia") || text.includes("x3") || text.includes("x5")) {
-    return vehicleProfiles.suv;
-  }
-  if (text.includes("odyssey") || text.includes("sienna") || text.includes("pacifica") || text.includes("caravan") || text.includes("transit") || text.includes("sprinter")) {
-    return vehicleProfiles.van;
-  }
-  if (text.includes("mustang") || text.includes("camaro") || text.includes("corvette") || text.includes("challenger") || text.includes("charger") || text.includes("miata") || text.includes("brz") || text.includes("86") || text.includes("supra")) {
-    return vehicleProfiles.coupe;
-  }
-  if (text.includes("tesla") || text.includes("model3") || text.includes("modely") || text.includes("models") || text.includes("modelx") || text.includes("electric")) {
-    return vehicleProfiles.ev;
-  }
-  return vehicleProfiles.sedan;
+  const variant = modelSpecificProfiles.find((profile) => profile.matches.some((token) => text.includes(token)));
+  const baseKey = variant?.base || profileTypeForText(text);
+  const profile = mergeProfile(vehicleProfiles[baseKey] || vehicleProfiles.sedan, variant?.overrides || {});
+  profile.key = variant?.id || baseKey;
+  profile.name = variant?.label || profile.name;
+  profile.baseType = baseKey;
+  profile.details = {
+    ...(profile.details || {}),
+    modelKey: profile.key,
+    selectedName: [vehicle.make, vehicle.model].filter(Boolean).join(" ")
+  };
+  return profile;
 }
 
 function paletteFor(vehicle) {
@@ -317,7 +745,7 @@ function initFallbackBlueprint(reason = "3D fallback") {
 function setVehicle(vehicle = readVehicleFromControls()) {
   const profile = classifyVehicle(vehicle);
   const [primary, accent] = paletteFor(vehicle);
-  const buildKey = `${profile.name}:${primary}:${accent}:${runtime.mode}`;
+  const buildKey = `${profile.key || profile.name}:${primary}:${accent}:${runtime.mode}`;
   currentProfile = profile;
 
   if (readout) {
@@ -339,6 +767,7 @@ function rebuildVehicle(profile, primary, accent) {
   disposeGroup(runtime.vehicleGroup);
   runtime.vehicleGroup.clear();
   hotspots = {};
+  issueZones = {};
 
   const surface = new THREE.MeshStandardMaterial({
     color: primary,
@@ -364,6 +793,7 @@ function rebuildVehicle(profile, primary, accent) {
   });
   const edge = new THREE.LineBasicMaterial({ color: primary, transparent: true, opacity: 0.92 });
   const accentEdge = new THREE.LineBasicMaterial({ color: accent, transparent: true, opacity: 0.86 });
+  const blueprintLine = new THREE.LineBasicMaterial({ color: 0xf6f1e8, transparent: true, opacity: 0.54 });
   const wheelMaterial = new THREE.MeshStandardMaterial({
     color: 0x0b0d0e,
     transparent: true,
@@ -375,9 +805,11 @@ function rebuildVehicle(profile, primary, accent) {
   addBox(profile.body, profile.bodyPos, surface, edge);
   addBox(profile.hood, profile.hoodPos, surface, edge);
   addBox(profile.cabin, profile.cabinPos, glass, accentEdge);
-  addBox(profile.rear, profile.rearPos, profile.name === "pickup truck" ? bed : surface, edge);
-  addWheels(profile, wheelMaterial, wheelEdge);
+  addBox(profile.rear, profile.rearPos, profile.baseType === "pickup" ? bed : surface, edge);
+  addWheels(profile, wheelMaterial, wheelEdge, accent);
   addCenterLine(profile, accent);
+  addBlueprintDetails(profile, primary, accent, blueprintLine, edge, accentEdge);
+  addIssueZones(profile);
   addHotspots(profile);
   setActiveArea(activeArea);
 
@@ -395,7 +827,268 @@ function addBox(size, position, material, edgeMaterial) {
   return group;
 }
 
-function addWheels(profile, wheelMaterial, edgeMaterial) {
+function vehicleBounds(profile) {
+  const sections = [
+    [profile.body, profile.bodyPos],
+    [profile.hood, profile.hoodPos],
+    [profile.cabin, profile.cabinPos],
+    [profile.rear, profile.rearPos]
+  ];
+
+  return sections.reduce((bounds, [size, position]) => {
+    const [width, height, depth] = size;
+    const [x, y, z] = position;
+    return {
+      frontX: Math.max(bounds.frontX, x + width / 2),
+      rearX: Math.min(bounds.rearX, x - width / 2),
+      roofY: Math.max(bounds.roofY, y + height / 2),
+      sideZ: Math.max(bounds.sideZ, Math.abs(z) + depth / 2)
+    };
+  }, { frontX: -Infinity, rearX: Infinity, roofY: -Infinity, sideZ: 0 });
+}
+
+function addDetailPanel(size, position, color, opacity = 0.28, edgeColor = color, edgeOpacity = 0.72) {
+  return addBox(
+    size,
+    position,
+    new THREE.MeshBasicMaterial({
+      color,
+      transparent: true,
+      opacity,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    }),
+    new THREE.LineBasicMaterial({
+      color: edgeColor,
+      transparent: true,
+      opacity: edgeOpacity
+    })
+  );
+}
+
+function addLine(start, end, color = 0xf6f1e8, opacity = 0.55) {
+  const geometry = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(...start),
+    new THREE.Vector3(...end)
+  ]);
+  const line = new THREE.Line(geometry, new THREE.LineBasicMaterial({ color, transparent: true, opacity }));
+  runtime.vehicleGroup.add(line);
+  return line;
+}
+
+function addBlueprintDetails(profile, primary, accent) {
+  const bounds = vehicleBounds(profile);
+  const details = profile.details || {};
+  addSideGlass(profile, bounds, accent);
+  addGrille(profile, bounds, details, primary, accent);
+  addHeadlights(profile, bounds, details, accent);
+  addTaillights(profile, bounds);
+  addHoodRidges(profile, details, primary);
+  addWheelArches(profile, details, accent);
+  addDimensionalLines(profile, bounds, primary, accent);
+
+  if (details.roofRails || details.longRoof) addRoofRails(profile, bounds, accent);
+  if (details.bedRails || profile.baseType === "pickup") addTruckBedDetails(profile, bounds, accent);
+  if (details.rearLiftgate) addRearLiftgate(profile, bounds, accent);
+  if (details.spareTire) addSpareTire(profile, bounds, accent);
+  if (details.batterySkateboard) addBatterySkateboard(profile, bounds, accent);
+  if (details.slidingDoorTrack) addSlidingDoorTrack(profile, bounds, accent);
+  if (details.panoramicGlass) addPanoramicRoof(profile, bounds);
+  if (details.towHooks) addTowHooks(bounds, accent);
+}
+
+function addSideGlass(profile, bounds, accent) {
+  const glassZ = bounds.sideZ + 0.025;
+  const glassY = profile.cabinPos[1] + profile.cabin[1] * 0.05;
+  const glassHeight = Math.max(0.28, profile.cabin[1] * 0.42);
+  const glassWidth = profile.cabin[0] * 0.86;
+
+  [glassZ, -glassZ].forEach((z) => {
+    addDetailPanel([glassWidth, glassHeight, 0.028], [profile.cabinPos[0], glassY, z], 0x9ee8ff, 0.2, accent, 0.68);
+    const dividerCount = profile.cabin[0] > 2.2 ? 3 : 2;
+    for (let index = 1; index < dividerCount; index += 1) {
+      const x = profile.cabinPos[0] - glassWidth / 2 + (glassWidth / dividerCount) * index;
+      addLine([x, glassY - glassHeight / 2, z + Math.sign(z) * 0.012], [x, glassY + glassHeight / 2, z + Math.sign(z) * 0.012], accent, 0.58);
+    }
+  });
+}
+
+function addGrille(profile, bounds, details, primary, accent) {
+  const grille = details.grille || {};
+  if (grille.hidden) {
+    addLine([bounds.frontX + 0.04, profile.hoodPos[1], -profile.hood[2] * 0.34], [bounds.frontX + 0.04, profile.hoodPos[1], profile.hood[2] * 0.34], accent, 0.64);
+    return;
+  }
+
+  const width = grille.width || Math.min(1.24, profile.hood[2] * 0.82);
+  const height = grille.height || 0.34;
+  const y = grille.y || profile.hoodPos[1] + 0.02;
+  const frontX = bounds.frontX + 0.035;
+  addDetailPanel([0.04, height, width], [frontX, y, 0], 0x0b0d0e, 0.34, accent, 0.92);
+
+  const ribs = grille.ribs || 3;
+  for (let index = 0; index < ribs; index += 1) {
+    const z = width * -0.38 + (width * 0.76 / Math.max(1, ribs - 1)) * index;
+    addDetailPanel([0.046, height * 0.82, 0.018], [frontX + 0.006, y, z], 0xf6f1e8, 0.22, primary, 0.42);
+  }
+
+  if (grille.crossbar || grille.blocky) {
+    addDetailPanel([0.048, 0.045, width * 0.88], [frontX + 0.008, y, 0], accent, 0.36, accent, 0.72);
+  }
+}
+
+function addHeadlights(profile, bounds, details, accent) {
+  const frontX = bounds.frontX + 0.052;
+  const zBase = Math.min(bounds.sideZ - 0.24, profile.hood[2] * 0.44);
+  const y = profile.hoodPos[1] + profile.hood[1] * 0.12;
+  const style = details.headlights || "wide";
+
+  if (style === "round") {
+    [-zBase, zBase].forEach((z) => addRoundLamp([frontX, y, z], 0xf6f1e8, 0.12));
+    return;
+  }
+
+  if (style === "stacked" || style === "split") {
+    [-zBase, zBase].forEach((z) => {
+      const side = Math.sign(z);
+      addDetailPanel([0.05, 0.11, 0.3], [frontX, y + 0.08, z], 0xf6f1e8, 0.38, accent, 0.7);
+      addDetailPanel([0.05, 0.1, 0.28], [frontX, y - 0.08, z - side * 0.02], 0x9ee8ff, 0.26, accent, 0.58);
+    });
+    return;
+  }
+
+  const lampHeight = style === "thinbar" ? 0.07 : 0.12;
+  const lampWidth = style === "angled" ? 0.4 : 0.34;
+  [-zBase, zBase].forEach((z) => addDetailPanel([0.05, lampHeight, lampWidth], [frontX, y, z], 0xf6f1e8, 0.36, accent, 0.68));
+}
+
+function addRoundLamp(position, color, radius) {
+  const lamp = new THREE.Mesh(
+    new THREE.CylinderGeometry(radius, radius, 0.055, 32),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.42 })
+  );
+  lamp.rotation.z = Math.PI / 2;
+  lamp.position.set(...position);
+  runtime.vehicleGroup.add(lamp);
+}
+
+function addTaillights(profile, bounds) {
+  const rearX = bounds.rearX - 0.04;
+  const zBase = bounds.sideZ - 0.2;
+  const y = profile.rearPos[1] + profile.rear[1] * 0.1;
+  [-zBase, zBase].forEach((z) => {
+    addDetailPanel([0.045, 0.28, 0.1], [rearX, y, z], 0xf06f61, 0.42, 0xf06f61, 0.78);
+  });
+}
+
+function addHoodRidges(profile, details, primary) {
+  const count = details.hoodRidges || 0;
+  if (!count) return;
+
+  const y = profile.hoodPos[1] + profile.hood[1] / 2 + 0.018;
+  const startX = profile.hoodPos[0] - profile.hood[0] / 2 + 0.1;
+  const endX = profile.hoodPos[0] + profile.hood[0] / 2 - 0.1;
+
+  for (let index = 0; index < count; index += 1) {
+    const offset = count === 1 ? 0 : -0.32 + (0.64 / (count - 1)) * index;
+    addLine([startX, y, offset], [endX, y, offset * 0.55], primary, 0.62);
+  }
+}
+
+function addWheelArches(profile, details, accent) {
+  const radius = 0.43 * (details.wheelArchScale || 1);
+  const material = new THREE.MeshBasicMaterial({ color: accent, transparent: true, opacity: 0.34 });
+  [profile.wheelFrontX, profile.wheelRearX].forEach((x) => {
+    [profile.wheelZ + 0.03, -profile.wheelZ - 0.03].forEach((z) => {
+      const arch = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.015, 10, 56), material.clone());
+      arch.position.set(x, 0.14, z);
+      runtime.vehicleGroup.add(arch);
+    });
+  });
+}
+
+function addDimensionalLines(profile, bounds, primary, accent) {
+  const y = -0.08;
+  const z = bounds.sideZ + 0.28;
+  addLine([bounds.rearX, y, z], [bounds.frontX, y, z], primary, 0.42);
+  addLine([bounds.rearX, y - 0.06, z], [bounds.rearX, y + 0.16, z], primary, 0.38);
+  addLine([bounds.frontX, y - 0.06, z], [bounds.frontX, y + 0.16, z], primary, 0.38);
+  addLine([profile.wheelRearX, 0.12, 0.24], [profile.wheelFrontX, 0.12, 0.24], accent, 0.48);
+  addLine([profile.wheelRearX, 0.12, -0.24], [profile.wheelFrontX, 0.12, -0.24], accent, 0.48);
+}
+
+function addRoofRails(profile, bounds, accent) {
+  const y = bounds.roofY + 0.08;
+  const frontX = profile.cabinPos[0] + profile.cabin[0] / 2 - 0.16;
+  const rearX = Math.min(profile.cabinPos[0] - profile.cabin[0] / 2 + 0.16, profile.rearPos[0] + profile.rear[0] / 2 - 0.14);
+  const railStart = Math.min(frontX, rearX);
+  const railEnd = Math.max(frontX, rearX);
+
+  [-bounds.sideZ * 0.58, bounds.sideZ * 0.58].forEach((z) => {
+    addLine([railStart, y, z], [railEnd, y, z], accent, 0.72);
+    addLine([railStart + 0.25, y, z], [railStart + 0.25, y - 0.16, z], accent, 0.48);
+    addLine([railEnd - 0.25, y, z], [railEnd - 0.25, y - 0.16, z], accent, 0.48);
+  });
+}
+
+function addTruckBedDetails(profile, bounds, accent) {
+  const rearStart = profile.rearPos[0] - profile.rear[0] / 2;
+  const rearEnd = profile.rearPos[0] + profile.rear[0] / 2;
+  const topY = profile.rearPos[1] + profile.rear[1] / 2 + 0.04;
+  const side = profile.rear[2] / 2 + 0.035;
+
+  [-side, side].forEach((z) => addLine([rearStart, topY, z], [rearEnd, topY, z], accent, 0.78));
+  addLine([rearStart, topY, -side], [rearStart, topY, side], accent, 0.58);
+  addLine([rearEnd, topY, -side], [rearEnd, topY, side], accent, 0.58);
+  addDetailPanel([0.04, profile.rear[1] * 0.64, profile.rear[2] * 0.86], [bounds.rearX - 0.015, profile.rearPos[1], 0], 0x0b0d0e, 0.16, accent, 0.72);
+}
+
+function addRearLiftgate(profile, bounds, accent) {
+  const rearX = bounds.rearX - 0.02;
+  const yTop = profile.rearPos[1] + profile.rear[1] * 0.38;
+  addLine([rearX, yTop, -profile.rear[2] * 0.34], [rearX, yTop, profile.rear[2] * 0.34], accent, 0.62);
+  addDetailPanel([0.035, 0.22, profile.rear[2] * 0.58], [rearX - 0.005, yTop - 0.28, 0], 0x9ee8ff, 0.12, accent, 0.48);
+}
+
+function addSpareTire(profile, bounds, accent) {
+  const tire = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.38, 0.38, 0.18, 42),
+    new THREE.MeshBasicMaterial({ color: 0x0b0d0e, transparent: true, opacity: 0.6 })
+  );
+  tire.rotation.z = Math.PI / 2;
+  tire.position.set(bounds.rearX - 0.16, profile.rearPos[1] + 0.06, 0);
+  const tireEdges = new THREE.LineSegments(
+    new THREE.EdgesGeometry(tire.geometry),
+    new THREE.LineBasicMaterial({ color: accent, transparent: true, opacity: 0.72 })
+  );
+  tireEdges.rotation.copy(tire.rotation);
+  tireEdges.position.copy(tire.position);
+  runtime.vehicleGroup.add(tire, tireEdges);
+}
+
+function addBatterySkateboard(profile, bounds, accent) {
+  addDetailPanel([profile.body[0] * 0.72, 0.08, profile.body[2] * 0.74], [profile.bodyPos[0] - 0.08, 0.12, 0], 0x8fc7ff, 0.2, accent, 0.66);
+  addLine([bounds.rearX + 0.42, 0.18, -0.32], [bounds.frontX - 0.42, 0.18, -0.32], 0x8fc7ff, 0.56);
+  addLine([bounds.rearX + 0.42, 0.18, 0.32], [bounds.frontX - 0.42, 0.18, 0.32], 0x8fc7ff, 0.56);
+}
+
+function addSlidingDoorTrack(profile, bounds, accent) {
+  const y = profile.cabinPos[1] + profile.cabin[1] * 0.08;
+  [bounds.sideZ + 0.035, -bounds.sideZ - 0.035].forEach((z) => {
+    addLine([profile.cabinPos[0] - profile.cabin[0] * 0.36, y, z], [profile.cabinPos[0] + profile.cabin[0] * 0.42, y, z], accent, 0.64);
+  });
+}
+
+function addPanoramicRoof(profile, bounds) {
+  addDetailPanel([profile.cabin[0] * 0.7, 0.035, profile.cabin[2] * 0.62], [profile.cabinPos[0], bounds.roofY + 0.02, 0], 0x9ee8ff, 0.16, 0x9ee8ff, 0.46);
+}
+
+function addTowHooks(bounds, accent) {
+  const frontX = bounds.frontX + 0.07;
+  [-0.32, 0.32].forEach((z) => addDetailPanel([0.05, 0.07, 0.12], [frontX, 0.42, z], accent, 0.42, accent, 0.8));
+}
+
+function addWheels(profile, wheelMaterial, edgeMaterial, accent) {
   const wheelPositions = [
     [profile.wheelFrontX, 0.1, profile.wheelZ],
     [profile.wheelFrontX, 0.1, -profile.wheelZ],
@@ -410,7 +1103,13 @@ function addWheels(profile, wheelMaterial, edgeMaterial) {
     const wheelEdges = new THREE.LineSegments(new THREE.EdgesGeometry(wheel.geometry), edgeMaterial.clone());
     wheelEdges.rotation.copy(wheel.rotation);
     wheelEdges.position.copy(wheel.position);
-    runtime.vehicleGroup.add(wheel, wheelEdges);
+    const hub = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.14, 0.14, 0.38, 28),
+      new THREE.MeshBasicMaterial({ color: accent, transparent: true, opacity: 0.42 })
+    );
+    hub.rotation.x = Math.PI / 2;
+    hub.position.set(...position);
+    runtime.vehicleGroup.add(wheel, wheelEdges, hub);
   });
 
   [profile.wheelFrontX, profile.wheelRearX].forEach((x) => {
@@ -431,6 +1130,63 @@ function addCenterLine(profile, accent) {
   ]);
   const line = new THREE.Line(lineGeometry, new THREE.LineBasicMaterial({ color: accent, transparent: true, opacity: 0.74 }));
   runtime.vehicleGroup.add(line);
+}
+
+function addIssueZones(profile) {
+  const bounds = vehicleBounds(profile);
+  addIssueZone("engine", [[
+    [profile.hood[0] * 0.9, profile.hood[1] + 0.28, profile.hood[2] * 0.92],
+    [profile.hoodPos[0], profile.hoodPos[1] + 0.1, 0]
+  ]]);
+  addIssueZone("wheel", [
+    [[0.86, 0.76, 0.32], [profile.wheelFrontX, 0.22, profile.wheelZ + 0.02]],
+    [[0.86, 0.76, 0.32], [profile.wheelFrontX, 0.22, -profile.wheelZ - 0.02]],
+    [[0.86, 0.76, 0.32], [profile.wheelRearX, 0.22, profile.wheelZ + 0.02]],
+    [[0.86, 0.76, 0.32], [profile.wheelRearX, 0.22, -profile.wheelZ - 0.02]]
+  ]);
+  addIssueZone("underbody", [[
+    [profile.body[0] * 0.82, 0.16, profile.body[2] * 0.84],
+    [profile.bodyPos[0], 0.16, 0]
+  ]]);
+  addIssueZone("transmission", [[
+    [0.88, 0.34, profile.body[2] * 0.46],
+    [profile.hotspots.transmission?.[0] || 0.25, 0.42, 0]
+  ]]);
+  addIssueZone("steering", [[
+    [0.52, 0.42, 0.52],
+    [profile.hotspots.steering?.[0] || 0.7, profile.hotspots.steering?.[1] || 0.95, bounds.sideZ * 0.55]
+  ]]);
+  addIssueZone("cabin", [[
+    [profile.cabin[0] * 0.92, profile.cabin[1] * 0.86, profile.cabin[2] * 0.9],
+    profile.cabinPos
+  ]]);
+}
+
+function addIssueZone(area, specs) {
+  const color = hotspotColors[area] || 0xf0c35f;
+  const group = new THREE.Group();
+  const items = specs.map(([size, position]) => {
+    const mesh = new THREE.Mesh(
+      new THREE.BoxGeometry(...size),
+      new THREE.MeshBasicMaterial({
+        color,
+        transparent: true,
+        opacity: 0.012,
+        depthWrite: false,
+        side: THREE.DoubleSide
+      })
+    );
+    const edges = new THREE.LineSegments(
+      new THREE.EdgesGeometry(mesh.geometry),
+      new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.08 })
+    );
+    mesh.position.set(...position);
+    edges.position.copy(mesh.position);
+    group.add(mesh, edges);
+    return { mesh, edges };
+  });
+  runtime.vehicleGroup.add(group);
+  issueZones[area] = { group, items };
 }
 
 function addHotspots(profile) {
@@ -462,6 +1218,14 @@ function setActiveArea(area = "engine") {
       hotspot.glow.material.opacity = isActive ? 0.82 : 0.18;
       hotspot.ring.material.opacity = isActive ? 1 : 0.34;
       hotspot.group.scale.setScalar(isActive ? 1.15 : 0.78);
+    });
+
+    Object.entries(issueZones).forEach(([key, zone]) => {
+      const isActive = key === activeArea;
+      zone.items.forEach(({ mesh, edges }) => {
+        mesh.material.opacity = isActive ? 0.18 : 0.012;
+        edges.material.opacity = isActive ? 0.92 : 0.08;
+      });
     });
   }
 
@@ -499,6 +1263,13 @@ function animate(time = 0) {
       const pulse = 1.14 + Math.sin(time * 0.006) * 0.16;
       activeHotspot.group.scale.setScalar(pulse);
     }
+    const activeZone = issueZones[activeArea];
+    if (activeZone) {
+      const opacity = 0.14 + Math.sin(time * 0.006) * 0.04;
+      activeZone.items.forEach(({ mesh }) => {
+        mesh.material.opacity = Math.max(0.08, opacity);
+      });
+    }
 
     runtime.renderer.render(runtime.scene, runtime.camera);
     requestAnimationFrame(animate);
@@ -526,6 +1297,7 @@ function drawFallback(time = 0) {
   drawFallbackBox(currentProfile.cabin, currentProfile.cabinPos, "#9ee8ff", "rgba(158, 232, 255, 0.1)");
   drawFallbackBox(currentProfile.rear, currentProfile.rearPos, accentCss, "rgba(240, 195, 95, 0.1)");
   drawFallbackWheels(currentProfile);
+  drawFallbackDetails(currentProfile, primaryCss, accentCss);
   drawFallbackHotspots(time);
 }
 
@@ -597,6 +1369,103 @@ function drawFallbackWheels(profile) {
     fallbackContext.fill();
     fallbackContext.stroke();
   });
+  fallbackContext.restore();
+}
+
+function drawFallbackDetails(profile, primaryCss, accentCss) {
+  const bounds = vehicleBounds(profile);
+  const details = profile.details || {};
+  const frontX = bounds.frontX + 0.04;
+  const rearX = bounds.rearX - 0.04;
+  const sideZ = bounds.sideZ + 0.05;
+  const grille = details.grille || {};
+
+  fallbackContext.save();
+  fallbackContext.lineWidth = 2;
+  fallbackContext.strokeStyle = accentCss;
+  fallbackContext.fillStyle = "rgba(246, 241, 232, 0.18)";
+
+  if (!grille.hidden) {
+    drawFallbackRect([frontX, grille.y || profile.hoodPos[1], 0], 28, Math.max(16, (grille.height || 0.34) * 38), accentCss);
+    for (let index = 0; index < (grille.ribs || 3); index += 1) {
+      const z = (grille.width || 1.1) * -0.36 + ((grille.width || 1.1) * 0.72 / Math.max(1, (grille.ribs || 3) - 1)) * index;
+      drawFallbackLine([frontX, (grille.y || profile.hoodPos[1]) - 0.16, z], [frontX, (grille.y || profile.hoodPos[1]) + 0.16, z], primaryCss, 1.5);
+    }
+  }
+
+  [-sideZ, sideZ].forEach((z) => {
+    drawFallbackLine([profile.cabinPos[0] - profile.cabin[0] * 0.42, profile.cabinPos[1] + 0.08, z], [profile.cabinPos[0] + profile.cabin[0] * 0.42, profile.cabinPos[1] + 0.08, z], "#9ee8ff", 2);
+    drawFallbackLine([profile.wheelRearX, 0.5, z], [profile.wheelFrontX, 0.5, z], accentCss, 1.5);
+  });
+
+  [-profile.wheelZ, profile.wheelZ].forEach((z) => {
+    [profile.wheelFrontX, profile.wheelRearX].forEach((x) => {
+      const point = projectPoint([x, 0.16, z]);
+      fallbackContext.beginPath();
+      fallbackContext.arc(point.x, point.y, 26 * point.scale * (details.wheelArchScale || 1), 0, Math.PI * 2);
+      fallbackContext.strokeStyle = accentCss;
+      fallbackContext.globalAlpha = 0.5;
+      fallbackContext.stroke();
+      fallbackContext.globalAlpha = 1;
+    });
+  });
+
+  if (details.roofRails || details.longRoof) {
+    const railStart = Math.min(profile.cabinPos[0] + profile.cabin[0] / 2 - 0.16, profile.cabinPos[0] - profile.cabin[0] / 2 + 0.16);
+    const railEnd = Math.max(profile.cabinPos[0] + profile.cabin[0] / 2 - 0.16, profile.cabinPos[0] - profile.cabin[0] / 2 + 0.16);
+    [-bounds.sideZ * 0.55, bounds.sideZ * 0.55].forEach((z) => {
+      drawFallbackLine([railStart, bounds.roofY + 0.08, z], [railEnd, bounds.roofY + 0.08, z], accentCss, 2);
+    });
+  }
+
+  if (details.bedRails || profile.baseType === "pickup") {
+    const topY = profile.rearPos[1] + profile.rear[1] / 2 + 0.04;
+    [-profile.rear[2] / 2, profile.rear[2] / 2].forEach((z) => {
+      drawFallbackLine([profile.rearPos[0] - profile.rear[0] / 2, topY, z], [profile.rearPos[0] + profile.rear[0] / 2, topY, z], accentCss, 2);
+    });
+  }
+
+  if (details.spareTire) {
+    const point = projectPoint([rearX - 0.14, profile.rearPos[1] + 0.06, 0]);
+    fallbackContext.beginPath();
+    fallbackContext.ellipse(point.x, point.y, 22 * point.scale, 28 * point.scale, 0, 0, Math.PI * 2);
+    fallbackContext.fillStyle = "rgba(6, 8, 9, 0.72)";
+    fallbackContext.strokeStyle = accentCss;
+    fallbackContext.fill();
+    fallbackContext.stroke();
+  }
+
+  if (details.batterySkateboard) {
+    drawFallbackRect([profile.bodyPos[0], 0.13, 0], 120, 14, "#8fc7ff");
+  }
+
+  drawFallbackLine([rearX, -0.08, sideZ + 0.2], [frontX, -0.08, sideZ + 0.2], primaryCss, 1.5);
+  fallbackContext.restore();
+}
+
+function drawFallbackLine(start, end, color, width = 2) {
+  const a = projectPoint(start);
+  const b = projectPoint(end);
+  fallbackContext.save();
+  fallbackContext.strokeStyle = color;
+  fallbackContext.lineWidth = width;
+  fallbackContext.beginPath();
+  fallbackContext.moveTo(a.x, a.y);
+  fallbackContext.lineTo(b.x, b.y);
+  fallbackContext.stroke();
+  fallbackContext.restore();
+}
+
+function drawFallbackRect(center, width, height, stroke) {
+  const point = projectPoint(center);
+  fallbackContext.save();
+  fallbackContext.strokeStyle = stroke;
+  fallbackContext.fillStyle = "rgba(246, 241, 232, 0.12)";
+  fallbackContext.lineWidth = 2;
+  fallbackContext.beginPath();
+  fallbackContext.rect(point.x - width / 2 * point.scale, point.y - height / 2 * point.scale, width * point.scale, height * point.scale);
+  fallbackContext.fill();
+  fallbackContext.stroke();
   fallbackContext.restore();
 }
 
