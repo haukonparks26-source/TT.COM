@@ -1,0 +1,679 @@
+:root {
+  color-scheme: dark;
+  --ink: #f6f1e8;
+  --muted: #aaa59b;
+  --panel: rgba(20, 24, 26, 0.82);
+  --panel-strong: rgba(27, 32, 34, 0.96);
+  --line: rgba(246, 241, 232, 0.13);
+  --mint: #58c4a6;
+  --gold: #f0c35f;
+  --coral: #f06f61;
+  --coal: #101314;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 16% 12%, rgba(88, 196, 166, 0.2), transparent 28rem),
+    linear-gradient(130deg, #101314 0%, #171715 42%, #261a17 100%);
+}
+
+button,
+select,
+input {
+  font: inherit;
+}
+
+.app-shell {
+  width: min(1440px, 100%);
+  min-height: 100vh;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 0;
+}
+
+.diagnostic-panel,
+.results-panel {
+  padding: clamp(18px, 3vw, 42px);
+}
+
+.diagnostic-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  border-right: 1px solid var(--line);
+}
+
+.topbar,
+.result-header,
+.brand,
+.input-strip {
+  display: flex;
+  align-items: center;
+}
+
+.topbar {
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand {
+  gap: 14px;
+}
+
+.brand-mark {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.brand-mark span {
+  position: absolute;
+  width: 22px;
+  height: 3px;
+  background: var(--mint);
+  transform: rotate(var(--tilt, 0deg));
+}
+
+.brand-mark span:nth-child(1) {
+  --tilt: 90deg;
+  background: var(--coral);
+}
+
+.brand-mark span:nth-child(3) {
+  --tilt: 45deg;
+  background: var(--gold);
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0;
+  font-size: clamp(1.8rem, 4vw, 4.8rem);
+  line-height: 0.96;
+  letter-spacing: 0;
+}
+
+h2 {
+  margin-bottom: 14px;
+  font-size: clamp(1.7rem, 3vw, 3rem);
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+h3 {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.icon-button {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+}
+
+.download-button {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.05);
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.icon-button svg,
+.file-control svg,
+.download-button svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.scanner {
+  flex: 1;
+  display: grid;
+  grid-template-rows: minmax(380px, 520px) auto;
+  align-items: center;
+  gap: clamp(18px, 3vw, 30px);
+  padding: 26px 0;
+}
+
+.car-visual {
+  display: none;
+}
+
+.car-visual svg {
+  width: min(760px, 100%);
+  filter: drop-shadow(0 36px 46px rgba(0, 0, 0, 0.45));
+}
+
+.blueprint-zone {
+  position: relative;
+  min-height: 380px;
+  height: clamp(380px, 52vh, 520px);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(rgba(88, 196, 166, 0.11) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(88, 196, 166, 0.11) 1px, transparent 1px),
+    radial-gradient(circle at 24% 22%, rgba(88, 196, 166, 0.16), transparent 16rem),
+    rgba(8, 13, 15, 0.92);
+  background-size: 28px 28px, 28px 28px, auto, auto;
+  box-shadow: inset 0 0 42px rgba(88, 196, 166, 0.08);
+}
+
+.blueprint-readout {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 3;
+  max-width: calc(100% - 24px);
+  padding: 8px 10px;
+  border: 1px solid rgba(246, 241, 232, 0.2);
+  background: rgba(12, 15, 16, 0.7);
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+#blueprintCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  cursor: grab;
+  touch-action: none;
+}
+
+#blueprintCanvas.is-dragging {
+  cursor: grabbing;
+}
+
+.blueprint-hotspots {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.blueprint-hotspots button {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid rgba(246, 241, 232, 0.2);
+  color: var(--ink);
+  background: rgba(12, 15, 16, 0.78);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.blueprint-hotspots button[aria-pressed="true"] {
+  border-color: transparent;
+  color: #101314;
+  background: var(--gold);
+}
+
+.body {
+  fill: url(#bodyPaint);
+  filter: url(#glow);
+}
+
+.window {
+  fill: rgba(16, 19, 20, 0.74);
+}
+
+.wheel {
+  fill: #0b0d0e;
+  stroke: #f6f1e8;
+  stroke-width: 10;
+}
+
+.hub {
+  fill: var(--mint);
+}
+
+.vehicle-emblem {
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.badge-plate {
+  fill: rgba(16, 19, 20, 0.78);
+  stroke: rgba(246, 241, 232, 0.62);
+  stroke-width: 2;
+}
+
+.badge-dot {
+  fill: var(--mint);
+}
+
+.badge-make,
+.badge-model {
+  fill: #f6f1e8;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.badge-make {
+  font-size: 12px;
+}
+
+.badge-model {
+  font-size: 11px;
+}
+
+.road,
+.signal,
+.scan-line {
+  fill: none;
+  stroke: rgba(246, 241, 232, 0.42);
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+.signal {
+  stroke: var(--gold);
+  opacity: 0.42;
+}
+
+.scan-line {
+  stroke: var(--coral);
+  animation: sweep 2.8s ease-in-out infinite;
+}
+
+.is-recording .scan-line,
+.is-recording .signal {
+  animation-duration: 1.1s;
+}
+
+@keyframes sweep {
+  0%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translateX(480px);
+    opacity: 0.9;
+  }
+}
+
+.capture-zone {
+  padding: 18px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  backdrop-filter: blur(18px);
+}
+
+canvas {
+  width: 100%;
+  height: 150px;
+  display: block;
+  background: #0c0f10;
+}
+
+.record-button {
+  width: 100%;
+  min-height: 64px;
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #111412;
+  background: var(--mint);
+  border: 0;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.record-button.is-active {
+  background: var(--coral);
+}
+
+.record-dot {
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  border-radius: 999px;
+}
+
+.status {
+  min-height: 44px;
+  margin: 14px 0 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.input-strip {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.select-control,
+.text-control,
+.file-control,
+.text-button {
+  min-height: 58px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ink);
+}
+
+.select-control {
+  flex: 1 1 210px;
+  justify-content: space-between;
+  padding: 10px 14px;
+}
+
+.text-control {
+  flex: 1 1 220px;
+  justify-content: space-between;
+  padding: 10px 14px;
+}
+
+.select-control span,
+.text-control span {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+select,
+.text-control input {
+  max-width: 160px;
+  color: var(--ink);
+  background: #15191a;
+  border: 1px solid var(--line);
+  padding: 8px;
+}
+
+.text-control input {
+  width: min(190px, 52%);
+}
+
+.file-control {
+  position: relative;
+  justify-content: center;
+  padding: 0 18px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.file-control input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.text-button {
+  min-height: 36px;
+  padding: 0 12px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.045);
+  cursor: pointer;
+}
+
+.icon-button:hover,
+.file-control:hover,
+.download-button:hover {
+  border-color: rgba(246, 241, 232, 0.34);
+}
+
+.results-panel {
+  min-height: 100vh;
+  background: var(--panel-strong);
+}
+
+.result-header {
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 26px;
+}
+
+.confidence {
+  padding: 7px 10px;
+  color: #101314;
+  background: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.result-summary {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.meter-group {
+  display: grid;
+  gap: 16px;
+  margin: 30px 0;
+}
+
+.meter-group div {
+  display: grid;
+  gap: 8px;
+}
+
+.meter-group span {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+meter {
+  width: 100%;
+  height: 10px;
+}
+
+.next-steps,
+.matches,
+.saved-recordings,
+.vehicle-issues {
+  margin-top: 30px;
+}
+
+ul {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.match-card {
+  margin-bottom: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.match-card strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.match-card span {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.recordings-note {
+  margin-bottom: 12px;
+  color: var(--muted);
+  line-height: 1.45;
+  font-size: 0.9rem;
+}
+
+.recording-list {
+  display: grid;
+  gap: 12px;
+}
+
+.recording-card {
+  padding: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.recording-card strong,
+.recording-card span {
+  display: block;
+}
+
+.recording-card span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.recording-card audio {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.recording-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.vehicle-issues-note {
+  margin-bottom: 12px;
+  color: var(--muted);
+  line-height: 1.45;
+  font-size: 0.9rem;
+}
+
+.vehicle-issue-list {
+  display: grid;
+  gap: 10px;
+}
+
+.vehicle-issue-card {
+  padding: 13px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.vehicle-issue-card strong,
+.vehicle-issue-card span {
+  display: block;
+}
+
+.vehicle-issue-card span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.38;
+}
+
+@media (max-width: 960px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .diagnostic-panel,
+  .results-panel {
+    min-height: auto;
+  }
+
+  .diagnostic-panel {
+    border-right: 0;
+  }
+}
+
+@media (max-width: 580px) {
+  .topbar {
+    align-items: flex-start;
+  }
+
+  .brand-mark {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+  }
+
+  .scanner {
+    grid-template-rows: minmax(340px, 430px) auto;
+  }
+
+  .blueprint-zone {
+    min-height: 340px;
+    height: 430px;
+  }
+
+  .blueprint-readout {
+    right: 12px;
+    font-size: 0.72rem;
+  }
+
+  canvas {
+    height: 118px;
+  }
+
+  .file-control,
+  .select-control,
+  .text-control {
+    width: 100%;
+  }
+
+  select,
+  .text-control input {
+    max-width: 135px;
+  }
+}

@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TorqueTune</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="diagnostic-panel" aria-label="Car sound diagnostic">
+        <header class="topbar">
+          <div class="brand">
+            <div class="brand-mark" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div>
+              <p class="eyebrow">TorqueTune</p>
+              <h1>Identify car issues by sound</h1>
+            </div>
+          </div>
+          <button class="icon-button" id="resetButton" type="button" aria-label="Reset diagnosis" title="Reset">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 12a9 9 0 1 0 3-6.7" />
+              <path d="M3 4v5h5" />
+            </svg>
+          </button>
+          <a class="download-button" href="MK7TORQUETUNE.zip" download>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3v12" />
+              <path d="m7 10 5 5 5-5" />
+              <path d="M5 21h14" />
+            </svg>
+            Download
+          </a>
+        </header>
+
+        <div class="scanner">
+          <div class="car-visual" aria-hidden="true">
+            <svg viewBox="0 0 640 340" role="img">
+              <defs>
+                <linearGradient id="bodyPaint" x1="0%" x2="100%">
+                  <stop offset="0%" stop-color="#58c4a6" />
+                  <stop offset="55%" stop-color="#f0c35f" />
+                  <stop offset="100%" stop-color="#f06f61" />
+                </linearGradient>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="12" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <path class="road" d="M82 260h476" />
+              <path class="signal signal-one" d="M135 96c-34 24-52 58-52 101s18 77 52 101" />
+              <path class="signal signal-two" d="M505 96c34 24 52 58 52 101s-18 77-52 101" />
+              <path class="body" d="M135 218c12-63 50-102 116-117h138c59 11 97 49 116 117h40c18 0 33 15 33 33v8H62v-8c0-18 15-33 33-33h40Z" />
+              <path class="window" d="M248 121h63v67h-117c14-34 32-55 54-67Z" />
+              <path class="window" d="M333 121h49c29 8 53 30 72 67H333v-67Z" />
+              <g class="vehicle-emblem" id="vehicleEmblem">
+                <rect class="badge-plate" id="vehicleBadgePlate" x="248" y="204" width="144" height="38" rx="18" />
+                <circle class="badge-dot" id="vehicleBadgeDot" cx="274" cy="223" r="14" />
+                <text class="badge-make" id="vehicleBadgeMake" x="274" y="228" text-anchor="middle">TT</text>
+                <text class="badge-model" id="vehicleBadgeModel" x="340" y="228" text-anchor="middle">Select vehicle</text>
+              </g>
+              <circle class="wheel" cx="171" cy="259" r="44" />
+              <circle class="wheel" cx="471" cy="259" r="44" />
+              <circle class="hub" cx="171" cy="259" r="17" />
+              <circle class="hub" cx="471" cy="259" r="17" />
+              <path class="scan-line" d="M80 72v228" />
+            </svg>
+          </div>
+
+          <section class="blueprint-zone" aria-label="3D vehicle blueprint">
+            <div class="blueprint-readout" id="blueprintReadout">3D vehicle blueprint</div>
+            <canvas id="blueprintCanvas"></canvas>
+            <div class="blueprint-hotspots" aria-label="Highlight issue area">
+              <button type="button" data-blueprint-area="engine">Engine</button>
+              <button type="button" data-blueprint-area="wheel">Brakes</button>
+              <button type="button" data-blueprint-area="underbody">Underbody</button>
+              <button type="button" data-blueprint-area="transmission">Drivetrain</button>
+              <button type="button" data-blueprint-area="steering">Steering</button>
+              <button type="button" data-blueprint-area="cabin">Cabin</button>
+            </div>
+          </section>
+
+          <div class="capture-zone">
+            <canvas id="waveCanvas" width="920" height="220" aria-label="Live audio waveform"></canvas>
+            <button class="record-button" id="recordButton" type="button">
+              <span class="record-dot" aria-hidden="true"></span>
+              <span id="recordLabel">Start listening</span>
+            </button>
+            <p class="status" id="statusText">Hold your phone near the sound: engine bay, wheels or brakes, underbody, drivetrain, or cabin.</p>
+          </div>
+        </div>
+
+        <div class="input-strip">
+          <label class="select-control">
+            <span>Year</span>
+            <select id="vehicleYearSelect" aria-label="Vehicle year"></select>
+          </label>
+          <label class="select-control">
+            <span>Make</span>
+            <select id="vehicleMakeSelect" aria-label="Vehicle make">
+              <option value="">Select make</option>
+              <option value="Acura">Acura</option>
+              <option value="Audi">Audi</option>
+              <option value="BMW">BMW</option>
+              <option value="Buick">Buick</option>
+              <option value="Cadillac">Cadillac</option>
+              <option value="Chevrolet">Chevrolet</option>
+              <option value="Chrysler">Chrysler</option>
+              <option value="Dodge">Dodge</option>
+              <option value="Ford">Ford</option>
+              <option value="GMC">GMC</option>
+              <option value="Honda">Honda</option>
+              <option value="Hyundai">Hyundai</option>
+              <option value="Infiniti">Infiniti</option>
+              <option value="Jeep">Jeep</option>
+              <option value="Kia">Kia</option>
+              <option value="Lexus">Lexus</option>
+              <option value="Mazda">Mazda</option>
+              <option value="Mercedes-Benz">Mercedes-Benz</option>
+              <option value="Nissan">Nissan</option>
+              <option value="Ram">Ram</option>
+              <option value="Subaru">Subaru</option>
+              <option value="Tesla">Tesla</option>
+              <option value="Toyota">Toyota</option>
+              <option value="Volkswagen">Volkswagen</option>
+              <option value="Volvo">Volvo</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+          <label class="text-control">
+            <span>Model</span>
+            <input id="vehicleModelInput" type="text" placeholder="Camry, F-150, Civic" autocomplete="off" />
+          </label>
+        </div>
+
+        <div class="input-strip">
+          <label class="select-control">
+            <span>Fuel</span>
+            <select id="engineFuelSelect" aria-label="Fuel or powertrain type">
+              <option value="">Fuel type</option>
+              <option value="gas">Gas</option>
+              <option value="diesel">Diesel</option>
+              <option value="hybrid">Hybrid</option>
+              <option value="plug-in hybrid">Plug-in hybrid</option>
+              <option value="electric">Electric</option>
+            </select>
+          </label>
+          <label class="text-control">
+            <span>Engine</span>
+            <input id="engineSpecInput" type="text" placeholder="2.5L I4, 5.0L V8" autocomplete="off" />
+          </label>
+          <label class="select-control">
+            <span>Boost</span>
+            <select id="engineAspirationSelect" aria-label="Engine aspiration">
+              <option value="">Aspiration</option>
+              <option value="naturally aspirated">Naturally aspirated</option>
+              <option value="turbo">Turbo</option>
+              <option value="supercharged">Supercharged</option>
+              <option value="twin-turbo">Twin-turbo</option>
+              <option value="electric motor">Electric motor</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="input-strip">
+          <label class="select-control">
+            <span>Drive</span>
+            <select id="drivetrainSelect" aria-label="Drivetrain">
+              <option value="">Drivetrain</option>
+              <option value="FWD">FWD</option>
+              <option value="RWD">RWD</option>
+              <option value="AWD">AWD</option>
+              <option value="4WD">4WD</option>
+            </select>
+          </label>
+          <label class="text-control">
+            <span>Mileage</span>
+            <input id="mileageInput" type="number" min="0" step="1000" placeholder="85000" inputmode="numeric" />
+          </label>
+        </div>
+
+        <div class="input-strip">
+          <label class="select-control">
+            <span>Sound source</span>
+            <select id="sourceSelect">
+              <option value="unknown">Not sure</option>
+              <option value="engine">Engine bay</option>
+              <option value="wheel">Wheel, brake, or axle</option>
+              <option value="underbody">Underbody or exhaust</option>
+              <option value="transmission">Transmission or drivetrain</option>
+              <option value="steering">Power steering</option>
+              <option value="cabin">Cabin</option>
+            </select>
+          </label>
+          <label class="select-control">
+            <span>When it happens</span>
+            <select id="conditionSelect">
+              <option value="idle">At idle</option>
+              <option value="accelerating">Accelerating</option>
+              <option value="braking">Braking</option>
+              <option value="turning">Turning</option>
+              <option value="bumps">Over bumps</option>
+              <option value="shifting">Shifting gears</option>
+              <option value="hot">Engine hot</option>
+            </select>
+          </label>
+          <label class="file-control">
+            <input id="audioUpload" type="file" accept="audio/*" />
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3v12" />
+              <path d="m7 8 5-5 5 5" />
+              <path d="M5 21h14" />
+            </svg>
+            Upload clip
+          </label>
+        </div>
+      </section>
+
+      <aside class="results-panel" aria-live="polite">
+        <div class="result-header">
+          <p class="eyebrow">Diagnosis</p>
+          <span class="confidence" id="confidenceBadge">Waiting</span>
+        </div>
+        <h2 id="resultTitle">Ready for a sound sample</h2>
+        <p class="result-summary" id="resultSummary">Record 5-8 seconds of the noise or upload an audio clip. The prototype listens for pitch, harshness, rhythm, and context to suggest likely problems.</p>
+
+        <div class="meter-group" aria-label="Audio traits">
+          <div>
+            <span>Roughness</span>
+            <meter id="rattleMeter" min="0" max="100" value="0"></meter>
+          </div>
+          <div>
+            <span>High pitch</span>
+            <meter id="squealMeter" min="0" max="100" value="0"></meter>
+          </div>
+          <div>
+            <span>Impact</span>
+            <meter id="knockMeter" min="0" max="100" value="0"></meter>
+          </div>
+        </div>
+
+        <div class="vehicle-issues">
+          <h3>Common issues for this vehicle</h3>
+          <p class="vehicle-issues-note" id="vehicleIssuesNote">Select year, make, and model to see common trouble spots.</p>
+          <div class="vehicle-issue-list" id="vehicleIssueList"></div>
+        </div>
+
+        <div class="next-steps">
+          <h3>Recommended checks</h3>
+          <ul id="stepsList">
+            <li>Capture a short clip close to the sound source.</li>
+            <li>Add driving context before recording for a better match.</li>
+            <li>Do not keep driving if the sound is loud, metallic, or paired with warning lights.</li>
+          </ul>
+        </div>
+
+        <div class="matches">
+          <h3>Possible causes</h3>
+          <div id="matchList"></div>
+        </div>
+
+        <div class="saved-recordings">
+          <h3>Saved recordings</h3>
+          <p class="recordings-note" id="recordingsNote">Diagnosed clips you record or upload will appear here for playback.</p>
+          <div class="recording-list" id="recordingList"></div>
+        </div>
+      </aside>
+    </main>
+
+    <script src="app.js"></script>
+    <script type="module" src="blueprint.js?v=5-three-path-fix"></script>
+  </body>
+</html>
