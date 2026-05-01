@@ -37,7 +37,16 @@
           </a>
         </header>
 
-        <div class="scanner">
+        <nav class="quick-tabs" aria-label="TorqueTune sections">
+          <a href="#diagnoseSection">Diagnose</a>
+          <a href="#vehicleSection">Vehicle</a>
+          <a href="#partsSection">Parts Photo</a>
+          <a href="#manualSection">Manual</a>
+          <a href="#mechanicSection">Mechanic</a>
+          <a href="#savedSection">Saved</a>
+        </nav>
+
+        <div class="scanner" id="diagnoseSection">
           <div class="car-visual" aria-hidden="true">
             <svg viewBox="0 0 640 340" role="img">
               <defs>
@@ -97,7 +106,7 @@
           </div>
         </div>
 
-        <div class="input-strip">
+        <div class="input-strip" id="vehicleSection">
           <label class="select-control">
             <span>Year</span>
             <select id="vehicleYearSelect" aria-label="Vehicle year"></select>
@@ -107,6 +116,7 @@
             <select id="vehicleMakeSelect" aria-label="Vehicle make">
               <option value="">Select make</option>
               <option value="Acura">Acura</option>
+              <option value="Alfa Romeo">Alfa Romeo</option>
               <option value="Audi">Audi</option>
               <option value="BMW">BMW</option>
               <option value="Buick">Buick</option>
@@ -115,17 +125,24 @@
               <option value="Chrysler">Chrysler</option>
               <option value="Dodge">Dodge</option>
               <option value="Ford">Ford</option>
+              <option value="Genesis">Genesis</option>
               <option value="GMC">GMC</option>
               <option value="Honda">Honda</option>
               <option value="Hyundai">Hyundai</option>
               <option value="Infiniti">Infiniti</option>
               <option value="Jeep">Jeep</option>
               <option value="Kia">Kia</option>
+              <option value="Land Rover">Land Rover</option>
               <option value="Lexus">Lexus</option>
+              <option value="Lincoln">Lincoln</option>
               <option value="Mazda">Mazda</option>
               <option value="Mercedes-Benz">Mercedes-Benz</option>
+              <option value="Mini">Mini</option>
+              <option value="Mitsubishi">Mitsubishi</option>
               <option value="Nissan">Nissan</option>
+              <option value="Porsche">Porsche</option>
               <option value="Ram">Ram</option>
+              <option value="Rivian">Rivian</option>
               <option value="Subaru">Subaru</option>
               <option value="Tesla">Tesla</option>
               <option value="Toyota">Toyota</option>
@@ -136,7 +153,8 @@
           </label>
           <label class="text-control">
             <span>Model</span>
-            <input id="vehicleModelInput" type="text" placeholder="Camry, F-150, Civic" autocomplete="off" />
+            <input id="vehicleModelInput" type="text" placeholder="Camry, F-150, Civic" list="modelSuggestions" autocomplete="off" />
+            <datalist id="modelSuggestions"></datalist>
           </label>
         </div>
 
@@ -187,6 +205,38 @@
         </div>
 
         <div class="input-strip">
+          <label class="text-control">
+            <span>VIN</span>
+            <input id="vinInput" type="text" maxlength="17" placeholder="17-character VIN" autocomplete="off" />
+          </label>
+          <button class="text-button utility-button" id="vinLookupButton" type="button">Decode VIN</button>
+          <p class="inline-note" id="vinStatus">VIN lookup ready.</p>
+        </div>
+
+        <div class="input-strip">
+          <label class="text-control">
+            <span>Name</span>
+            <input id="customerNameInput" type="text" placeholder="Customer or driver" autocomplete="name" />
+          </label>
+          <label class="text-control">
+            <span>Contact</span>
+            <input id="customerContactInput" type="text" placeholder="Phone or email" autocomplete="email" />
+          </label>
+        </div>
+
+        <div class="input-strip">
+          <label class="select-control">
+            <span>Category</span>
+            <select id="symptomCategorySelect">
+              <option value="">Any category</option>
+              <option value="engine">Engine</option>
+              <option value="wheel">Brakes, wheels, tires</option>
+              <option value="transmission">Transmission/drivetrain</option>
+              <option value="steering">Steering</option>
+              <option value="underbody">Exhaust/underbody</option>
+              <option value="cabin">Electrical/HVAC/cabin</option>
+            </select>
+          </label>
           <label class="select-control">
             <span>Sound source</span>
             <select id="sourceSelect">
@@ -220,6 +270,76 @@
             </svg>
             Upload clip
           </label>
+        </div>
+
+        <div class="input-strip">
+          <label class="text-control note-control">
+            <span>Mechanic note</span>
+            <textarea id="mechanicNoteInput" rows="3" placeholder="What happened, speed, weather, warning lights"></textarea>
+          </label>
+          <label class="file-control">
+            <input id="mediaUpload" type="file" accept="image/*,video/*" />
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 7h4l2-3h4l2 3h4v13H4z" />
+              <path d="M9 13a3 3 0 1 0 6 0 3 3 0 0 0-6 0Z" />
+            </svg>
+            Add photo/video
+          </label>
+          <p class="inline-note" id="mediaFileName">No photo or video attached.</p>
+        </div>
+
+        <div class="tool-rail" aria-label="Extra vehicle tools">
+          <section class="tool-page" id="partsSection" aria-label="Damaged part photo replacement finder">
+            <div class="tool-header">
+              <p class="eyebrow">Parts Photo</p>
+              <h2>Photograph damaged parts</h2>
+            </div>
+            <p class="tool-vehicle" id="partsVehicleSummary">Select year, make, and model first.</p>
+            <div class="input-strip">
+              <label class="file-control">
+                <input id="damagePhotoInput" type="file" accept="image/*" capture="environment" />
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 7h4l2-3h4l2 3h4v13H4z" />
+                  <path d="M9 13a3 3 0 1 0 6 0 3 3 0 0 0-6 0Z" />
+                </svg>
+                Take photo
+              </label>
+              <label class="select-control">
+                <span>Part area</span>
+                <select id="damageAreaSelect">
+                  <option value="auto">Auto guess</option>
+                  <option value="brake pads rotors">Brake pads/rotors</option>
+                  <option value="bumper cover">Bumper/body</option>
+                  <option value="headlight assembly">Headlight</option>
+                  <option value="tail light assembly">Tail light</option>
+                  <option value="mirror assembly">Mirror</option>
+                  <option value="wheel rim">Wheel/rim</option>
+                  <option value="tire">Tire</option>
+                  <option value="radiator">Radiator/cooling</option>
+                  <option value="exhaust pipe muffler">Exhaust</option>
+                  <option value="control arm suspension">Suspension</option>
+                  <option value="serpentine belt">Belt</option>
+                </select>
+              </label>
+              <label class="text-control">
+                <span>Describe</span>
+                <input id="damageDescriptionInput" type="text" placeholder="Cracked headlight, bent rim" />
+              </label>
+            </div>
+            <div class="damage-preview" id="damagePreview">No damage photo selected.</div>
+            <p class="tool-note" id="damageAssessment">Replacement links will use the selected vehicle and part area. Confirm fitment before buying.</p>
+            <div class="link-grid" id="replacementLinks"></div>
+          </section>
+
+          <section class="tool-page" id="manualSection" aria-label="Owner manual finder">
+            <div class="tool-header">
+              <p class="eyebrow">Owner Manual</p>
+              <h2>Find the manual for this car</h2>
+            </div>
+            <p class="tool-vehicle" id="manualVehicleSummary">Select year, make, and model first.</p>
+            <div class="link-grid" id="manualLinks"></div>
+            <button class="text-button utility-button" id="refreshManualButton" type="button">Refresh manual links</button>
+          </section>
         </div>
       </section>
 
@@ -266,7 +386,13 @@
           <div id="matchList"></div>
         </div>
 
-        <div class="saved-recordings">
+        <div class="mechanic-dashboard" id="mechanicSection">
+          <h3>Mechanic dashboard</h3>
+          <div class="dashboard-grid" id="mechanicDashboard"></div>
+          <button class="text-button" id="exportAllReportButton" type="button">Export report</button>
+        </div>
+
+        <div class="saved-recordings" id="savedSection">
           <h3>Saved recordings</h3>
           <p class="recordings-note" id="recordingsNote">Diagnosed clips you record or upload will appear here for playback.</p>
           <div class="recording-list" id="recordingList"></div>
@@ -275,6 +401,6 @@
     </main>
 
     <script src="app.js"></script>
-    <script type="module" src="blueprint.js?v=5-three-path-fix"></script>
+    <script type="module" src="blueprint.js?v=6-tools-pages"></script>
   </body>
 </html>

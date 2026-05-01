@@ -5,18 +5,38 @@ const statusText = document.querySelector("#statusText");
 const vehicleYearSelect = document.querySelector("#vehicleYearSelect");
 const vehicleMakeSelect = document.querySelector("#vehicleMakeSelect");
 const vehicleModelInput = document.querySelector("#vehicleModelInput");
+const modelSuggestions = document.querySelector("#modelSuggestions");
 const engineFuelSelect = document.querySelector("#engineFuelSelect");
 const engineSpecInput = document.querySelector("#engineSpecInput");
 const engineAspirationSelect = document.querySelector("#engineAspirationSelect");
 const drivetrainSelect = document.querySelector("#drivetrainSelect");
 const mileageInput = document.querySelector("#mileageInput");
+const vinInput = document.querySelector("#vinInput");
+const vinLookupButton = document.querySelector("#vinLookupButton");
+const vinStatus = document.querySelector("#vinStatus");
+const customerNameInput = document.querySelector("#customerNameInput");
+const customerContactInput = document.querySelector("#customerContactInput");
 const vehicleBadgePlate = document.querySelector("#vehicleBadgePlate");
 const vehicleBadgeDot = document.querySelector("#vehicleBadgeDot");
 const vehicleBadgeMake = document.querySelector("#vehicleBadgeMake");
 const vehicleBadgeModel = document.querySelector("#vehicleBadgeModel");
+const symptomCategorySelect = document.querySelector("#symptomCategorySelect");
 const sourceSelect = document.querySelector("#sourceSelect");
 const conditionSelect = document.querySelector("#conditionSelect");
 const audioUpload = document.querySelector("#audioUpload");
+const mechanicNoteInput = document.querySelector("#mechanicNoteInput");
+const mediaUpload = document.querySelector("#mediaUpload");
+const mediaFileName = document.querySelector("#mediaFileName");
+const damagePhotoInput = document.querySelector("#damagePhotoInput");
+const damageAreaSelect = document.querySelector("#damageAreaSelect");
+const damageDescriptionInput = document.querySelector("#damageDescriptionInput");
+const damagePreview = document.querySelector("#damagePreview");
+const damageAssessment = document.querySelector("#damageAssessment");
+const replacementLinks = document.querySelector("#replacementLinks");
+const partsVehicleSummary = document.querySelector("#partsVehicleSummary");
+const manualVehicleSummary = document.querySelector("#manualVehicleSummary");
+const manualLinks = document.querySelector("#manualLinks");
+const refreshManualButton = document.querySelector("#refreshManualButton");
 const canvas = document.querySelector("#waveCanvas");
 const ctx = canvas.getContext("2d");
 const resultTitle = document.querySelector("#resultTitle");
@@ -31,6 +51,8 @@ const vehicleIssuesNote = document.querySelector("#vehicleIssuesNote");
 const vehicleIssueList = document.querySelector("#vehicleIssueList");
 const recordingList = document.querySelector("#recordingList");
 const recordingsNote = document.querySelector("#recordingsNote");
+const mechanicDashboard = document.querySelector("#mechanicDashboard");
+const exportAllReportButton = document.querySelector("#exportAllReportButton");
 
 let audioContext;
 let analyser;
@@ -39,12 +61,14 @@ let mediaRecorder;
 let recordingChunks = [];
 let pendingRecordingDiagnosis;
 let recordingUrls = [];
+let pendingMediaFile = null;
 let animationId;
 let listeningStartedAt = 0;
 
 const recordingsDbName = "torquetune-recordings";
 const recordingsStoreName = "recordings";
 const vehicleStorageKey = "torquetune.vehicle.v1";
+const customerStorageKey = "torquetune.customer.v1";
 
 const blueprintSourceAreas = {
   unknown: "engine",
@@ -85,6 +109,92 @@ const makeBadges = {
   Volvo: { mark: "VOLVO", color: "#dbeafe", accent: "#111827" },
   Other: { mark: "CAR", color: "#58c4a6", accent: "#101314" }
 };
+
+const vehicleModelCatalog = {
+  Acura: ["Integra", "ILX", "TLX", "RLX", "RDX", "MDX", "NSX"],
+  "Alfa Romeo": ["Giulia", "Stelvio", "Tonale", "4C"],
+  Audi: ["A3", "A4", "A5", "A6", "A7", "A8", "Q3", "Q5", "Q7", "Q8", "e-tron"],
+  BMW: ["2 Series", "3 Series", "4 Series", "5 Series", "7 Series", "X1", "X3", "X5", "X7", "i4", "iX"],
+  Buick: ["Encore", "Envision", "Enclave", "Regal", "LaCrosse"],
+  Cadillac: ["ATS", "CTS", "CT4", "CT5", "XT4", "XT5", "XT6", "Escalade"],
+  Chevrolet: ["Camaro", "Corvette", "Cruze", "Equinox", "Impala", "Malibu", "Silverado", "Suburban", "Tahoe", "Trailblazer", "Traverse"],
+  Chrysler: ["200", "300", "Pacifica", "Town & Country", "Voyager"],
+  Dodge: ["Challenger", "Charger", "Durango", "Grand Caravan", "Journey"],
+  Ford: ["Bronco", "Edge", "Escape", "Expedition", "Explorer", "F-150", "F-250", "F-350", "Focus", "Fusion", "Maverick", "Mustang", "Ranger", "Transit"],
+  Genesis: ["G70", "G80", "G90", "GV60", "GV70", "GV80"],
+  GMC: ["Acadia", "Canyon", "Sierra", "Terrain", "Yukon"],
+  Honda: ["Accord", "Civic", "CR-V", "Fit", "HR-V", "Odyssey", "Passport", "Pilot", "Ridgeline"],
+  Hyundai: ["Accent", "Elantra", "Ioniq 5", "Kona", "Palisade", "Santa Fe", "Sonata", "Tucson", "Venue"],
+  Infiniti: ["Q50", "Q60", "QX50", "QX55", "QX60", "QX80"],
+  Jeep: ["Cherokee", "Compass", "Gladiator", "Grand Cherokee", "Renegade", "Wagoneer", "Wrangler"],
+  Kia: ["Forte", "K5", "Niro", "Optima", "Rio", "Sorento", "Soul", "Sportage", "Telluride"],
+  "Land Rover": ["Defender", "Discovery", "Discovery Sport", "Range Rover", "Range Rover Evoque", "Range Rover Sport", "Range Rover Velar"],
+  Lexus: ["ES", "GS", "GX", "IS", "LS", "LX", "NX", "RX", "UX"],
+  Lincoln: ["Aviator", "Corsair", "MKC", "MKX", "MKZ", "Nautilus", "Navigator"],
+  Mazda: ["Mazda3", "Mazda6", "CX-3", "CX-30", "CX-5", "CX-50", "CX-9", "MX-5 Miata"],
+  "Mercedes-Benz": ["A-Class", "C-Class", "E-Class", "S-Class", "CLA", "GLA", "GLC", "GLE", "GLS", "Sprinter"],
+  Mini: ["Cooper", "Clubman", "Countryman", "Paceman"],
+  Mitsubishi: ["Eclipse Cross", "Lancer", "Mirage", "Outlander", "Outlander Sport"],
+  Nissan: ["Altima", "Frontier", "Maxima", "Murano", "Pathfinder", "Rogue", "Sentra", "Titan", "Versa"],
+  Porsche: ["718", "911", "Cayenne", "Macan", "Panamera", "Taycan"],
+  Ram: ["1500", "2500", "3500", "ProMaster"],
+  Rivian: ["R1S", "R1T", "EDV"],
+  Subaru: ["Ascent", "BRZ", "Crosstrek", "Forester", "Impreza", "Legacy", "Outback", "WRX"],
+  Tesla: ["Model 3", "Model S", "Model X", "Model Y", "Cybertruck"],
+  Toyota: ["4Runner", "Avalon", "Camry", "Corolla", "Highlander", "Prius", "RAV4", "Sequoia", "Sienna", "Tacoma", "Tundra"],
+  Volkswagen: ["Atlas", "Golf", "GTI", "Jetta", "Passat", "Taos", "Tiguan"],
+  Volvo: ["S60", "S90", "V60", "V90", "XC40", "XC60", "XC90"]
+};
+
+const manualPortalHosts = {
+  Acura: "owners.acura.com",
+  "Alfa Romeo": "alfaromeousa.com",
+  Audi: "ownersmanual.audiusa.com",
+  BMW: "bmwusa.com",
+  Buick: "buick.com",
+  Cadillac: "cadillac.com",
+  Chevrolet: "chevrolet.com",
+  Chrysler: "mopar.com",
+  Dodge: "mopar.com",
+  Ford: "ford.com",
+  Genesis: "genesis.com",
+  GMC: "gmc.com",
+  Honda: "owners.honda.com",
+  Hyundai: "hyundaiusa.com",
+  Infiniti: "infinitiusa.com",
+  Jeep: "mopar.com",
+  Kia: "owners.kia.com",
+  "Land Rover": "landroverusa.com",
+  Lexus: "lexus.com",
+  Lincoln: "lincoln.com",
+  Mazda: "mazdausa.com",
+  "Mercedes-Benz": "mbusa.com",
+  Mini: "miniusa.com",
+  Mitsubishi: "mitsubishicars.com",
+  Nissan: "nissanusa.com",
+  Porsche: "porsche.com",
+  Ram: "mopar.com",
+  Rivian: "rivian.com",
+  Subaru: "subaru.com",
+  Tesla: "tesla.com",
+  Toyota: "toyota.com",
+  Volkswagen: "vw.com",
+  Volvo: "volvocars.com"
+};
+
+const damageAreaKeywords = [
+  ["headlight assembly", ["headlight", "lamp", "lens"]],
+  ["tail light assembly", ["taillight", "tail light", "brake light"]],
+  ["bumper cover", ["bumper", "cover", "fascia"]],
+  ["mirror assembly", ["mirror", "glass"]],
+  ["wheel rim", ["rim", "wheel", "curb"]],
+  ["tire", ["tire", "sidewall", "nail"]],
+  ["radiator", ["radiator", "coolant", "leak"]],
+  ["exhaust pipe muffler", ["exhaust", "muffler", "pipe"]],
+  ["brake pads rotors", ["brake", "rotor", "pad", "caliper"]],
+  ["control arm suspension", ["control arm", "suspension", "ball joint", "strut"]],
+  ["serpentine belt", ["belt", "pulley", "tensioner"]]
+];
 
 const commonVehicleIssueRules = [
   {
@@ -248,6 +358,49 @@ const commonVehicleIssueRules = [
     ]
   }
 ];
+
+commonVehicleIssueRules.push(
+  {
+    make: "Audi",
+    models: ["A4", "A6", "Q5", "Q7"],
+    years: [2008, 2024],
+    issues: [
+      ["Oil leaks and PCV faults", "Whistling, rough idle, or oil smell can come from PCV and gasket issues."],
+      ["Timing chain/tensioner noise", "Rattle from the front of the engine deserves quick inspection."],
+      ["Suspension control arm wear", "Clunks over bumps and uneven tire wear are common checks."]
+    ]
+  },
+  {
+    make: "Mazda",
+    models: ["Mazda3", "Mazda6", "CX-5", "CX-9"],
+    years: [2010, 2024],
+    issues: [
+      ["Belt tensioner seepage or chirp", "Look for belt chirp, pulley noise, or hydraulic tensioner leaks."],
+      ["Motor mounts", "Idle vibration or thuds shifting into gear can point to mount wear."],
+      ["Brake and wheel bearing noise", "Hum, squeal, or vibration should be checked by speed and braking condition."]
+    ]
+  },
+  {
+    make: "Volkswagen",
+    models: ["Jetta", "Golf", "GTI", "Passat", "Tiguan", "Atlas"],
+    years: [2008, 2024],
+    issues: [
+      ["Water pump or thermostat housing leaks", "Coolant smell, low coolant, or overheating should be checked."],
+      ["Carbon buildup or misfires", "Rough idle and hesitation can need intake and ignition diagnosis."],
+      ["DSG/transmission behavior", "Clunks, delay, or shudder should be documented by gear and temperature."]
+    ]
+  },
+  {
+    make: "Volvo",
+    models: ["S60", "XC60", "XC90", "V60", "S90"],
+    years: [2010, 2024],
+    issues: [
+      ["PCV/oil trap issues", "Whistle, rough idle, or oil leaks can point to crankcase ventilation faults."],
+      ["Suspension clunks", "Control arms, links, and struts can make noises over bumps."],
+      ["Cooling and turbo checks", "Hiss, whine, coolant smell, or power loss should be inspected."]
+    ]
+  }
+);
 
 const diagnosticProfiles = [
   {
@@ -984,6 +1137,99 @@ diagnosticProfiles.push(
   )
 );
 
+diagnosticProfiles.push(
+  problemProfile(
+    "wheel_bearing_hum",
+    "Wheel bearing hum",
+    ["wheel", "accelerating", "turning"],
+    { whine: 76, rattle: 36, thud: 18 },
+    "A speed-related hum or growl that changes when turning often points to a worn wheel bearing or hub.",
+    ["Note whether the hum changes when turning left or right.", "Check for wheel play and roughness.", "Repair before bearing heat or hub failure worsens."],
+    "Service soon"
+  ),
+  problemProfile(
+    "turbo_wastegate_rattle",
+    "Turbo wastegate rattle",
+    ["engine", "accelerating"],
+    { rattle: 78, whine: 46, hiss: 34 },
+    "Rattle, hiss, or power loss on a turbo engine can point to wastegate wear, boost leaks, or turbo plumbing issues.",
+    ["Listen during light throttle and deceleration.", "Inspect charge pipes, clamps, and vacuum lines.", "Scan boost pressure and wastegate control data."],
+    "Service soon"
+  ),
+  problemProfile(
+    "differential_whine",
+    "Differential or axle whine",
+    ["transmission", "accelerating"],
+    { whine: 90, thud: 34, rattle: 20 },
+    "A rear or center whine that changes with throttle can point to differential bearings, low gear oil, or driveline wear.",
+    ["Note whether the whine appears on acceleration or coast.", "Check differential fluid level and metal debris.", "Inspect mounts and driveshaft joints."],
+    "High priority"
+  ),
+  problemProfile(
+    "driveshaft_u_joint",
+    "Driveshaft or U-joint clunk",
+    ["transmission", "shifting"],
+    { thud: 88, click: 44, rattle: 36 },
+    "A clunk when shifting into drive/reverse or taking off can point to U-joints, driveshaft slip yoke, mounts, or differential lash.",
+    ["Listen during parking-lot shifts.", "Inspect U-joints and driveshaft play.", "Repair quickly if vibration appears at speed."],
+    "Service soon"
+  ),
+  problemProfile(
+    "starter_grinding",
+    "Starter grinding",
+    ["engine", "idle"],
+    { grind: 86, click: 54, whine: 36 },
+    "Grinding during start-up can mean starter gear, flywheel/flexplate teeth, weak engagement, or mounting issues.",
+    ["Stop repeated grinding starts.", "Inspect starter mounting and gear engagement.", "Check battery voltage because low voltage can cause bad engagement."],
+    "High priority"
+  ),
+  problemProfile(
+    "ev_drive_unit_whine",
+    "EV drive unit whine",
+    ["transmission", "accelerating"],
+    { whine: 92, rattle: 18, thud: 12 },
+    "A loud EV whine or vibration can come from drive unit bearings, tires, wheel bearings, motor mounts, or inverter cooling components.",
+    ["Compare sound under acceleration and regen.", "Check tires and wheel bearings first.", "Have high-voltage drive components inspected by qualified service."],
+    "Service soon"
+  ),
+  problemProfile(
+    "hybrid_battery_fan",
+    "Hybrid battery cooling fan noise",
+    ["cabin", "idle", "accelerating"],
+    { whine: 58, rattle: 42, hiss: 18 },
+    "A loud fan from the rear seat or cargo area can come from a clogged hybrid battery cooling fan or high battery temperature.",
+    ["Check vents for lint or blockage.", "Do not block battery cooling intakes.", "Have hybrid system temperatures scanned if warnings appear."],
+    "Service soon"
+  ),
+  problemProfile(
+    "dpf_regen_exhaust",
+    "Diesel DPF or emissions noise",
+    ["underbody", "engine", "hot"],
+    { rattle: 52, hiss: 42, whine: 22 },
+    "Diesel emissions systems can cause hot exhaust smells, fan noise, hiss, rattle, or reduced power during DPF/EGR/DEF faults.",
+    ["Scan diesel emissions codes.", "Do not ignore repeated reduced-power warnings.", "Check exhaust sensors, DEF level, and DPF status."],
+    "Service soon"
+  ),
+  problemProfile(
+    "exhaust_manifold_tick",
+    "Exhaust manifold tick",
+    ["engine", "accelerating"],
+    { rattle: 56, hiss: 46, click: 34 },
+    "A ticking or puffing noise that is louder cold and under acceleration can point to exhaust manifold leaks or broken studs.",
+    ["Listen near the manifold on cold start.", "Check for soot tracks around gaskets or studs.", "Repair leaks before fumes or heat damage spread."],
+    "Service soon"
+  ),
+  problemProfile(
+    "intake_vacuum_leak",
+    "Intake or vacuum leak",
+    ["engine", "idle"],
+    { hiss: 88, rattle: 20, whine: 18 },
+    "A steady hiss with rough idle, lean codes, or stalling often points to a vacuum hose, intake boot, PCV, or gasket leak.",
+    ["Listen around hoses and intake boots.", "Check fuel trims and smoke-test the intake.", "Repair leaks before replacing sensors."],
+    "Service soon"
+  )
+);
+
 const privateSoundLibrary = [
   {
     issueId: "belt_chirp",
@@ -1075,6 +1321,8 @@ function saveVehicle() {
   localStorage.setItem(vehicleStorageKey, JSON.stringify(getVehicle()));
   updateVehicleLogo();
   renderVehicleIssues();
+  updateModelSuggestions();
+  renderToolLinks();
   dispatchBlueprintVehicle();
 }
 
@@ -1089,8 +1337,12 @@ function hydrateVehicleControls() {
   engineAspirationSelect.value = vehicle.aspiration || "";
   drivetrainSelect.value = vehicle.drivetrain || "";
   mileageInput.value = vehicle.mileage || "";
+  vinInput.value = vehicle.vin || "";
+  hydrateCustomerControls();
+  updateModelSuggestions();
   updateVehicleLogo();
   renderVehicleIssues();
+  renderToolLinks();
   dispatchBlueprintVehicle();
 }
 
@@ -1103,7 +1355,8 @@ function getVehicle() {
     engine: engineSpecInput.value.trim(),
     aspiration: engineAspirationSelect.value,
     drivetrain: drivetrainSelect.value,
-    mileage: mileageInput.value
+    mileage: mileageInput.value,
+    vin: vinInput.value.trim().toUpperCase()
   };
 }
 
@@ -1112,6 +1365,38 @@ function getVehicleLabel() {
   const base = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(" ");
   const engine = [vehicle.engine, vehicle.aspiration, vehicle.fuel, vehicle.drivetrain].filter(Boolean).join(", ");
   return [base, engine].filter(Boolean).join(" - ");
+}
+
+function loadCustomer() {
+  try {
+    return JSON.parse(localStorage.getItem(customerStorageKey)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function saveCustomer() {
+  localStorage.setItem(customerStorageKey, JSON.stringify(getCustomer()));
+  renderMechanicDashboard();
+}
+
+function hydrateCustomerControls() {
+  const customer = loadCustomer();
+  customerNameInput.value = customer.name || "";
+  customerContactInput.value = customer.contact || "";
+}
+
+function getCustomer() {
+  return {
+    name: customerNameInput.value.trim(),
+    contact: customerContactInput.value.trim()
+  };
+}
+
+function updateModelSuggestions() {
+  if (!modelSuggestions) return;
+  const models = vehicleModelCatalog[vehicleMakeSelect.value] || [];
+  modelSuggestions.innerHTML = models.map((model) => `<option value="${escapeHtml(model)}"></option>`).join("");
 }
 
 function updateVehicleLogo() {
@@ -1312,6 +1597,181 @@ function engineSpecificIssues(vehicle) {
 
 function normalizeText(value) {
   return String(value).toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function renderToolLinks() {
+  renderManualLinks();
+  renderReplacementLinks();
+}
+
+function renderManualLinks() {
+  if (!manualLinks || !manualVehicleSummary) return;
+  const vehicle = getVehicle();
+  const vehicleName = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(" ");
+  manualVehicleSummary.textContent = vehicleName
+    ? `${vehicleName}${vehicle.engine ? ` - ${vehicle.engine}` : ""}`
+    : "Select year, make, and model first.";
+
+  if (!vehicle.year || !vehicle.make || !vehicle.model) {
+    manualLinks.innerHTML = "";
+    return;
+  }
+
+  const host = manualPortalHosts[vehicle.make];
+  const manualQuery = `${vehicle.year} ${vehicle.make} ${vehicle.model} owners manual PDF`;
+  const links = [
+    {
+      label: "Official manual search",
+      detail: "Searches the maker's owner support/manual pages first.",
+      url: host
+        ? `https://www.google.com/search?q=${encodeURIComponent(`${manualQuery} site:${host}`)}`
+        : `https://www.google.com/search?q=${encodeURIComponent(manualQuery)}`
+    },
+    {
+      label: "NHTSA safety and recalls",
+      detail: "Check recalls and safety information for this vehicle.",
+      url: `https://www.nhtsa.gov/recalls?vin=${encodeURIComponent(vehicle.vin || "")}`
+    },
+    {
+      label: "Web manual search",
+      detail: "Fallback search if the official portal needs login or region selection.",
+      url: `https://www.google.com/search?q=${encodeURIComponent(manualQuery)}`
+    }
+  ];
+  manualLinks.innerHTML = links.map(linkCard).join("");
+}
+
+function renderReplacementLinks() {
+  if (!replacementLinks || !partsVehicleSummary || !damageAssessment) return;
+  const vehicle = getVehicle();
+  const vehicleName = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(" ");
+  const selectedArea = getSelectedDamagePart();
+  const description = damageDescriptionInput.value.trim();
+  const partQuery = [vehicleName, description || selectedArea, "replacement part"].filter(Boolean).join(" ");
+  partsVehicleSummary.textContent = vehicleName
+    ? `${vehicleName}${vehicle.engine ? ` - ${vehicle.engine}` : ""}`
+    : "Select year, make, and model first.";
+
+  if (!vehicleName) {
+    replacementLinks.innerHTML = "";
+    damageAssessment.textContent = "Select the vehicle first, then take a photo or choose a damaged part area.";
+    return;
+  }
+
+  damageAssessment.textContent = `Replacement search prepared for: ${description || selectedArea}. Confirm trim, engine, side, and VIN fitment before buying.`;
+  const links = [
+    {
+      label: "Parts search",
+      detail: "Broad web search for exact fit replacement options.",
+      url: `https://www.google.com/search?q=${encodeURIComponent(partQuery)}`
+    },
+    {
+      label: "AutoZone fitment search",
+      detail: "After opening, confirm year/make/model/engine on the retailer site.",
+      url: `https://www.autozone.com/searchresult?searchText=${encodeURIComponent(partQuery)}`
+    },
+    {
+      label: "O'Reilly fitment search",
+      detail: "Use the vehicle selector there before purchasing.",
+      url: `https://www.oreillyauto.com/search?q=${encodeURIComponent(partQuery)}`
+    },
+    {
+      label: "RockAuto web search",
+      detail: "Catalog results vary, so this opens a web search scoped to RockAuto.",
+      url: `https://www.google.com/search?q=${encodeURIComponent(`${partQuery} site:rockauto.com`)}`
+    },
+    {
+      label: "OEM part number search",
+      detail: "Useful when body panels, lights, or trim have side/color/trim differences.",
+      url: `https://www.google.com/search?q=${encodeURIComponent(`${partQuery} OEM part number`)}`
+    }
+  ];
+  replacementLinks.innerHTML = links.map(linkCard).join("");
+}
+
+function linkCard(link) {
+  return `
+    <a class="link-card" href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer">
+      <strong>${escapeHtml(link.label)}</strong>
+      <span>${escapeHtml(link.detail)}</span>
+    </a>
+  `;
+}
+
+function getSelectedDamagePart() {
+  if (damageAreaSelect.value && damageAreaSelect.value !== "auto") return damageAreaSelect.value;
+  const searchText = `${damageDescriptionInput.value} ${pendingMediaFile?.name || ""}`.toLowerCase();
+  const match = damageAreaKeywords.find(([, keywords]) => keywords.some((keyword) => searchText.includes(keyword)));
+  return match?.[0] || blueprintPartFromArea(sourceSelect.value);
+}
+
+function blueprintPartFromArea(area) {
+  return {
+    engine: "engine component",
+    wheel: "brake wheel suspension part",
+    underbody: "underbody exhaust part",
+    transmission: "transmission drivetrain part",
+    steering: "steering suspension part",
+    cabin: "interior electrical part",
+    unknown: "damaged car part"
+  }[area] || "damaged car part";
+}
+
+async function decodeVin() {
+  const vin = vinInput.value.trim().toUpperCase();
+  if (!vin || vin.length < 11) {
+    vinStatus.textContent = "Enter at least 11 VIN characters, ideally the full 17.";
+    return;
+  }
+
+  vinStatus.textContent = "Decoding VIN with NHTSA...";
+  try {
+    const response = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/${encodeURIComponent(vin)}?format=json`);
+    const data = await response.json();
+    const result = data.Results?.[0] || {};
+
+    if (result.ModelYear) vehicleYearSelect.value = result.ModelYear;
+    if (result.Make) vehicleMakeSelect.value = titleCase(result.Make);
+    if (result.Model) vehicleModelInput.value = result.Model;
+    if (result.FuelTypePrimary) engineFuelSelect.value = mapFuelType(result.FuelTypePrimary);
+    if (result.DriveType) drivetrainSelect.value = mapDriveType(result.DriveType);
+
+    const enginePieces = [
+      result.DisplacementL ? `${result.DisplacementL}L` : "",
+      result.EngineConfiguration || "",
+      result.EngineCylinders ? `${result.EngineCylinders} cyl` : ""
+    ].filter(Boolean);
+    if (enginePieces.length) engineSpecInput.value = enginePieces.join(" ");
+
+    saveVehicle();
+    vinStatus.textContent = result.ErrorText && !result.ErrorText.startsWith("0")
+      ? `VIN decoded with note: ${result.ErrorText}`
+      : "VIN decoded and vehicle fields updated.";
+  } catch {
+    vinStatus.textContent = "VIN lookup could not connect. You can still enter vehicle details manually.";
+  }
+}
+
+function mapFuelType(value) {
+  const fuel = normalizeText(value);
+  if (fuel.includes("electric")) return "electric";
+  if (fuel.includes("diesel")) return "diesel";
+  if (fuel.includes("hybrid")) return "hybrid";
+  if (fuel.includes("gas") || fuel.includes("petrol")) return "gas";
+  return "";
+}
+
+function mapDriveType(value) {
+  const drive = normalizeText(value);
+  if (drive.includes("awd") || drive.includes("allwheel")) return "AWD";
+  if (drive.includes("4wd") || drive.includes("fourwheel")) return "4WD";
+  if (drive.includes("rwd") || drive.includes("rear")) return "RWD";
+  if (drive.includes("fwd") || drive.includes("front")) return "FWD";
+  return "";
+}
+
+function titleCase(value) {
+  return String(value || "").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function drawIdleWave() {
@@ -1562,9 +2022,10 @@ function scoreProfile(profile, traits) {
   const traitDistance = keys.reduce((sum, key) => sum + Math.abs((profile.signature[key] || 0) - (traits[key] || 0)), 0);
   const contextMatch = profile.context.includes(sourceSelect.value) || profile.context.includes(conditionSelect.value);
   const contextScore = contextMatch ? 18 : 0;
+  const categoryScore = symptomCategorySelect.value && profile.context.includes(symptomCategorySelect.value) ? 12 : 0;
   const privateScore = profile.privateSample ? 5 : 0;
   const vehicleScore = vehicleAgeScore(profile);
-  return clamp(100 - traitDistance / keys.length + contextScore + privateScore + vehicleScore);
+  return clamp(100 - traitDistance / keys.length + contextScore + categoryScore + privateScore + vehicleScore);
 }
 
 function vehicleAgeScore(profile) {
@@ -1625,20 +2086,32 @@ function normalizeTraits(traits) {
 }
 
 async function saveRecording(blob, diagnosis, sourceType) {
+  const mediaBlob = pendingMediaFile ? pendingMediaFile.slice(0, pendingMediaFile.size, pendingMediaFile.type) : null;
   const record = {
     id: createId(),
     blob,
     mimeType: blob.type || "audio/webm",
     createdAt: new Date().toISOString(),
     diagnosisName: diagnosis.best.name,
+    urgency: diagnosis.best.urgency,
     confidence: diagnosis.confidence,
     sourceType,
     vehicle: getVehicleLabel() || "Vehicle not set",
+    vehicleData: getVehicle(),
+    customer: getCustomer(),
     soundSource: labelFor(sourceSelect, sourceSelect.value),
-    condition: labelFor(conditionSelect, conditionSelect.value)
+    condition: labelFor(conditionSelect, conditionSelect.value),
+    mechanicNote: mechanicNoteInput.value.trim(),
+    mediaBlob,
+    mediaType: pendingMediaFile?.type || "",
+    mediaName: pendingMediaFile?.name || "",
+    trainingCandidate: false
   };
 
   await putRecording(record);
+  pendingMediaFile = null;
+  if (mediaUpload) mediaUpload.value = "";
+  if (mediaFileName) mediaFileName.textContent = "No photo or video attached.";
   await renderSavedRecordings();
   statusText.textContent = `${diagnosis.best.urgency}: clip saved below for mechanic playback.`;
 }
@@ -1691,6 +2164,13 @@ function deleteRecording(id) {
   return withRecordingsStore("readwrite", (store) => store.delete(id));
 }
 
+async function updateRecording(id, updates) {
+  const recordings = await getRecordings();
+  const existing = recordings.find((recording) => recording.id === id);
+  if (!existing) return;
+  await putRecording({ ...existing, ...updates, updatedAt: new Date().toISOString() });
+}
+
 async function renderSavedRecordings() {
   if (!recordingList || !recordingsNote || !window.indexedDB) return;
 
@@ -1726,8 +2206,44 @@ async function renderSavedRecordings() {
     audio.controls = true;
     audio.src = url;
 
+    const note = document.createElement("textarea");
+    note.className = "recording-note-input";
+    note.dataset.recordingNote = recording.id;
+    note.placeholder = "Add mechanic notes, inspected parts, repair estimate, or customer comments";
+    note.value = recording.mechanicNote || "";
+
+    if (recording.mediaBlob) {
+      const mediaUrl = URL.createObjectURL(recording.mediaBlob);
+      recordingUrls.push(mediaUrl);
+      const media = recording.mediaType.startsWith("video/") ? document.createElement("video") : document.createElement("img");
+      if (media.tagName === "VIDEO") media.controls = true;
+      media.src = mediaUrl;
+      media.alt = recording.mediaName || "Attached vehicle media";
+      card.append(title, details, audio, media, note);
+    } else {
+      card.append(title, details, audio, note);
+    }
+
     const actions = document.createElement("div");
     actions.className = "recording-actions";
+
+    const saveNoteButton = document.createElement("button");
+    saveNoteButton.className = "text-button";
+    saveNoteButton.type = "button";
+    saveNoteButton.dataset.saveRecordingNote = recording.id;
+    saveNoteButton.textContent = "Save note";
+
+    const trainingButton = document.createElement("button");
+    trainingButton.className = "text-button";
+    trainingButton.type = "button";
+    trainingButton.dataset.toggleTraining = recording.id;
+    trainingButton.textContent = recording.trainingCandidate ? "Training set: yes" : "Mark for AI training";
+
+    const reportButton = document.createElement("button");
+    reportButton.className = "text-button";
+    reportButton.type = "button";
+    reportButton.dataset.exportRecording = recording.id;
+    reportButton.textContent = "Report";
 
     const removeButton = document.createElement("button");
     removeButton.className = "text-button";
@@ -1735,10 +2251,36 @@ async function renderSavedRecordings() {
     removeButton.dataset.deleteRecording = recording.id;
     removeButton.textContent = "Remove";
 
-    actions.append(removeButton);
-    card.append(title, details, audio, actions);
+    actions.append(saveNoteButton, trainingButton, reportButton, removeButton);
+    card.append(actions);
     recordingList.append(card);
   });
+
+  renderMechanicDashboard(recordings);
+}
+
+function renderMechanicDashboard(recordings = []) {
+  if (!mechanicDashboard) return;
+  const trainingCount = recordings.filter((recording) => recording.trainingCandidate).length;
+  const withMedia = recordings.filter((recording) => recording.mediaBlob).length;
+  const highPriority = recordings.filter((recording) => /high/i.test(recording.urgency || "") || Number(recording.confidence) >= 85).length;
+  const last = recordings[0]?.diagnosisName || "No diagnosis yet";
+  const customer = getCustomer();
+  const cards = [
+    [`${recordings.length}`, "Saved clips"],
+    [`${highPriority}`, "High-priority checks"],
+    [`${withMedia}`, "Photo/video attachments"],
+    [`${trainingCount}`, "Future AI training clips"],
+    [customer.name || "Guest", "Local profile"],
+    [getVehicleLabel() || "Vehicle not set", "Selected vehicle"],
+    [last, "Latest diagnosis"]
+  ];
+  mechanicDashboard.innerHTML = cards.map(([value, label]) => `
+    <article class="dashboard-card">
+      <strong>${escapeHtml(value)}</strong>
+      <span>${escapeHtml(label)}</span>
+    </article>
+  `).join("");
 }
 
 function formatDate(value) {
@@ -1756,6 +2298,54 @@ function labelFor(select, value) {
 
 function createId() {
   return crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function createMechanicReport(recordings) {
+  const vehicle = getVehicleLabel() || "Vehicle not set";
+  const customer = getCustomer();
+  const lines = [
+    "MK7TORQUETUNE mechanic report",
+    `Created: ${new Date().toLocaleString()}`,
+    `Customer: ${customer.name || "Not set"}`,
+    `Contact: ${customer.contact || "Not set"}`,
+    `Vehicle: ${vehicle}`,
+    "",
+    "Saved clips:"
+  ];
+
+  if (!recordings.length) {
+    lines.push("No saved clips yet.");
+  }
+
+  recordings.forEach((recording, index) => {
+    lines.push(
+      "",
+      `${index + 1}. ${recording.diagnosisName}`,
+      `Confidence: ${recording.confidence}%`,
+      `Urgency: ${recording.urgency || "Not stored"}`,
+      `Recorded/uploaded: ${formatDate(recording.createdAt)}`,
+      `Source: ${recording.soundSource} / ${recording.condition}`,
+      `Vehicle then: ${recording.vehicle || "Vehicle not set"}`,
+      `Note: ${recording.mechanicNote || "None"}`,
+      `Attached media: ${recording.mediaName || "None"}`,
+      `Marked for future AI training: ${recording.trainingCandidate ? "Yes" : "No"}`
+    );
+  });
+
+  lines.push("", "Important: confirm all diagnosis and replacement part fitment with a qualified mechanic.");
+  return lines.join("\n");
+}
+
+function downloadTextFile(filename, content) {
+  const blob = new Blob([content], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 function escapeHtml(value) {
@@ -1793,7 +2383,44 @@ engineSpecInput.addEventListener("input", saveVehicle);
 engineAspirationSelect.addEventListener("change", saveVehicle);
 drivetrainSelect.addEventListener("change", saveVehicle);
 mileageInput.addEventListener("input", saveVehicle);
+vinInput.addEventListener("input", saveVehicle);
+customerNameInput.addEventListener("input", saveCustomer);
+customerContactInput.addEventListener("input", saveCustomer);
+vinLookupButton.addEventListener("click", decodeVin);
 sourceSelect.addEventListener("change", () => dispatchBlueprintHighlight());
+symptomCategorySelect.addEventListener("change", () => {
+  if (symptomCategorySelect.value) {
+    sourceSelect.value = symptomCategorySelect.value;
+    dispatchBlueprintHighlight(symptomCategorySelect.value);
+  }
+});
+refreshManualButton.addEventListener("click", renderManualLinks);
+damageAreaSelect.addEventListener("change", renderReplacementLinks);
+damageDescriptionInput.addEventListener("input", renderReplacementLinks);
+
+mediaUpload.addEventListener("change", (event) => {
+  pendingMediaFile = event.target.files?.[0] || null;
+  mediaFileName.textContent = pendingMediaFile ? `Attached: ${pendingMediaFile.name}` : "No photo or video attached.";
+});
+
+damagePhotoInput.addEventListener("change", (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  const guessedPart = damageAreaKeywords.find(([, keywords]) => keywords.some((keyword) => file.name.toLowerCase().includes(keyword)))?.[0];
+  if (guessedPart && damageAreaSelect.value === "auto") {
+    damageAssessment.textContent = `Photo loaded. Auto guess: ${guessedPart}. Confirm the part area before buying.`;
+  }
+  damagePreview.innerHTML = "";
+  const image = document.createElement("img");
+  image.src = url;
+  image.alt = "Damaged vehicle part preview";
+  image.addEventListener("load", () => URL.revokeObjectURL(url), { once: true });
+  damagePreview.append(image);
+  pendingMediaFile = file;
+  mediaFileName.textContent = `Attached: ${file.name}`;
+  renderReplacementLinks();
+});
 
 window.addEventListener("torquetune:blueprint-select", (event) => {
   const area = event.detail?.area;
@@ -1823,19 +2450,59 @@ audioUpload.addEventListener("change", (event) => {
   });
 });
 
-recordingList.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-delete-recording]");
-  if (!button) return;
-  if (!window.confirm("Remove this saved recording from this browser?")) return;
+recordingList.addEventListener("click", async (event) => {
+  const deleteButton = event.target.closest("[data-delete-recording]");
+  const noteButton = event.target.closest("[data-save-recording-note]");
+  const trainingButton = event.target.closest("[data-toggle-training]");
+  const reportButton = event.target.closest("[data-export-recording]");
 
-  deleteRecording(button.dataset.deleteRecording)
-    .then(renderSavedRecordings)
-    .catch(() => {
-      statusText.textContent = "That saved recording could not be removed.";
-    });
+  try {
+    if (deleteButton) {
+      if (!window.confirm("Remove this saved recording from this browser?")) return;
+      await deleteRecording(deleteButton.dataset.deleteRecording);
+      await renderSavedRecordings();
+      return;
+    }
+
+    if (noteButton) {
+      const note = recordingList.querySelector(`[data-recording-note="${noteButton.dataset.saveRecordingNote}"]`)?.value || "";
+      await updateRecording(noteButton.dataset.saveRecordingNote, { mechanicNote: note });
+      await renderSavedRecordings();
+      statusText.textContent = "Mechanic note saved.";
+      return;
+    }
+
+    if (trainingButton) {
+      const recordings = await getRecordings();
+      const record = recordings.find((recording) => recording.id === trainingButton.dataset.toggleTraining);
+      await updateRecording(trainingButton.dataset.toggleTraining, { trainingCandidate: !record?.trainingCandidate });
+      await renderSavedRecordings();
+      statusText.textContent = "AI training flag updated locally.";
+      return;
+    }
+
+    if (reportButton) {
+      const recordings = await getRecordings();
+      const record = recordings.find((recording) => recording.id === reportButton.dataset.exportRecording);
+      if (record) downloadTextFile(`MK7TORQUETUNE-${record.id}.txt`, createMechanicReport([record]));
+    }
+  } catch {
+    statusText.textContent = "That saved recording action could not be completed.";
+  }
+});
+
+exportAllReportButton.addEventListener("click", async () => {
+  try {
+    const recordings = await getRecordings();
+    recordings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    downloadTextFile("MK7TORQUETUNE-mechanic-report.txt", createMechanicReport(recordings));
+  } catch {
+    statusText.textContent = "The mechanic report could not be exported.";
+  }
 });
 
 resetButton.addEventListener("click", resetApp);
 hydrateVehicleControls();
 drawIdleWave();
 renderSavedRecordings();
+renderMechanicDashboard();

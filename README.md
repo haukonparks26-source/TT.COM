@@ -10,6 +10,10 @@ The vehicle selector stores year, make, and model locally and shows a starter li
 
 The 3D blueprint uses the selected vehicle to switch between sedan, pickup, SUV, coupe, van, and EV forms. For example, selecting Ford and typing F-150 turns the blueprint into a pickup-style vehicle. Drag the blueprint to rotate it, or tap the hotspot buttons to highlight the likely problem area.
 
+The app also includes a local customer profile, VIN lookup, mechanic notes, photo/video attachments, a mechanic dashboard, report export, an owner manual finder, and a damaged-part photo page that builds replacement-part search links from the selected vehicle.
+
+Future AI training clips can be marked in the saved recordings section. This keeps a local training queue in the browser; real AI matching from thousands of sounds will need a backend, a licensed sound dataset, and a trained model.
+
 ## Run locally
 
 Open `index.html` in a browser, or serve the folder over localhost for microphone support:
