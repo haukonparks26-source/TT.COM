@@ -95,7 +95,10 @@ input {
   display: grid;
   place-items: center;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.05);
+  background:
+    linear-gradient(rgba(16, 19, 20, 0.06), rgba(16, 19, 20, 0.18)),
+    url("app-cover.png") center / cover;
+  overflow: hidden;
 }
 
 .brand-mark span {
@@ -104,6 +107,7 @@ input {
   height: 3px;
   background: var(--mint);
   transform: rotate(var(--tilt, 0deg));
+  display: none;
 }
 
 .brand-mark span:nth-child(1) {

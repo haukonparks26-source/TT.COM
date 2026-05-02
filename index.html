@@ -4,6 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TorqueTune</title>
+    <meta name="description" content="TorqueTune identifies car issues by sound and saves recordings for a mechanic." />
+    <meta name="theme-color" content="#101314" />
+    <meta name="apple-mobile-web-app-title" content="TorqueTune" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta property="og:title" content="TorqueTune" />
+    <meta property="og:description" content="Identify car issues by sound." />
+    <meta property="og:image" content="https://torquetune.net/torquetune-cover.png" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="torquetune-icon-180.png" />
+    <link rel="icon" href="torquetune-icon-192.png" type="image/png" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -407,5 +420,10 @@
 
     <script src="app.js"></script>
     <script type="module" src="blueprint.js?v=7-realistic-blueprint"></script>
+    <script>
+      if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+        navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+      }
+    </script>
   </body>
 </html>

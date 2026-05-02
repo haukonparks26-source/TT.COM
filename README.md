@@ -12,6 +12,8 @@ The 3D blueprint uses the selected vehicle to switch between detailed model-spec
 
 The app also includes a local customer profile, VIN lookup, mechanic notes, photo/video attachments, a mechanic dashboard, report export, an owner manual finder, and a damaged-part photo page that builds replacement-part search links from the selected vehicle.
 
+TorqueTune includes iPhone home-screen support through a web app manifest, cover image, Apple touch icon, and service worker. Open the live HTTPS site in Safari, tap Share, then Add to Home Screen.
+
 Future AI training clips can be marked in the saved recordings section. This keeps a local training queue in the browser; real AI matching from thousands of sounds will need a backend, a licensed sound dataset, and a trained model.
 
 ## Run locally

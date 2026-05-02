@@ -1,0 +1,31 @@
+{
+  "name": "TorqueTune",
+  "short_name": "TorqueTune",
+  "description": "Identify car issues by sound and save recordings for a mechanic.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#101314",
+  "theme_color": "#101314",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "torquetune-icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "torquetune-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "torquetune-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
