@@ -583,12 +583,12 @@ const modelSpecificProfiles = [
 ];
 
 const hotspotColors = {
-  engine: 0xf06f61,
-  wheel: 0xf0c35f,
-  underbody: 0x58c4a6,
+  engine: 0xff4f66,
+  wheel: 0x8eb1ff,
+  underbody: 0x4169e1,
   transmission: 0x8fc7ff,
   steering: 0xc084fc,
-  cabin: 0xf6f1e8
+  cabin: 0xc7d2e1
 };
 
 currentProfile = vehicleProfiles.sedan;
@@ -680,7 +680,7 @@ function classifyVehicle(vehicle) {
 }
 
 function paletteFor(vehicle) {
-  return makePalettes[vehicle.make] || [0x58c4a6, 0xf0c35f];
+  return makePalettes[vehicle.make] || [0x4169e1, 0xc7d2e1];
 }
 
 async function loadThree() {
@@ -712,7 +712,7 @@ function initThreeBlueprint() {
 
   runtime.blueprintGroup = new THREE.Group();
   runtime.vehicleGroup = new THREE.Group();
-  runtime.grid = new THREE.GridHelper(8, 18, 0x58c4a6, 0x254347);
+  runtime.grid = new THREE.GridHelper(8, 18, 0x4169e1, 0x1b2747);
   runtime.grid.position.y = -0.22;
   runtime.grid.material.transparent = true;
   runtime.grid.material.opacity = 0.32;
@@ -720,13 +720,13 @@ function initThreeBlueprint() {
   runtime.scene.add(runtime.grid);
   runtime.blueprintGroup.add(runtime.vehicleGroup);
   runtime.scene.add(runtime.blueprintGroup);
-  runtime.scene.add(new THREE.AmbientLight(0x88fff0, 1.15));
+  runtime.scene.add(new THREE.AmbientLight(0x8eb1ff, 1.15));
 
   const keyLight = new THREE.DirectionalLight(0xffffff, 1.65);
   keyLight.position.set(3, 4, 5);
   runtime.scene.add(keyLight);
 
-  const rimLight = new THREE.PointLight(0x58c4a6, 2.1, 9);
+  const rimLight = new THREE.PointLight(0x4169e1, 2.1, 9);
   rimLight.position.set(-3, 2.5, -3);
   runtime.scene.add(rimLight);
 
@@ -1292,10 +1292,10 @@ function drawFallback(time = 0) {
   fallbackContext.clearRect(0, 0, width, height);
 
   drawFallbackGrid(width, height);
-  drawFallbackBox(currentProfile.body, currentProfile.bodyPos, primaryCss, "rgba(88, 196, 166, 0.12)");
+  drawFallbackBox(currentProfile.body, currentProfile.bodyPos, primaryCss, "rgba(65, 105, 225, 0.12)");
   drawFallbackBox(currentProfile.hood, currentProfile.hoodPos, primaryCss, "rgba(240, 111, 97, 0.12)");
   drawFallbackBox(currentProfile.cabin, currentProfile.cabinPos, "#9ee8ff", "rgba(158, 232, 255, 0.1)");
-  drawFallbackBox(currentProfile.rear, currentProfile.rearPos, accentCss, "rgba(240, 195, 95, 0.1)");
+  drawFallbackBox(currentProfile.rear, currentProfile.rearPos, accentCss, "rgba(199, 210, 225, 0.1)");
   drawFallbackWheels(currentProfile);
   drawFallbackDetails(currentProfile, primaryCss, accentCss);
   drawFallbackHotspots(time);
@@ -1303,7 +1303,7 @@ function drawFallback(time = 0) {
 
 function drawFallbackGrid(width, height) {
   fallbackContext.save();
-  fallbackContext.strokeStyle = "rgba(88, 196, 166, 0.12)";
+  fallbackContext.strokeStyle = "rgba(65, 105, 225, 0.14)";
   fallbackContext.lineWidth = 1;
   for (let x = 0; x < width; x += 28) {
     fallbackContext.beginPath();
@@ -1364,7 +1364,7 @@ function drawFallbackWheels(profile) {
     fallbackContext.beginPath();
     fallbackContext.ellipse(point.x, point.y, 20 * point.scale, 9 * point.scale, 0, 0, Math.PI * 2);
     fallbackContext.fillStyle = "rgba(6, 8, 9, 0.72)";
-    fallbackContext.strokeStyle = "rgba(246, 241, 232, 0.72)";
+    fallbackContext.strokeStyle = "rgba(199, 210, 225, 0.76)";
     fallbackContext.lineWidth = 2;
     fallbackContext.fill();
     fallbackContext.stroke();
@@ -1383,7 +1383,7 @@ function drawFallbackDetails(profile, primaryCss, accentCss) {
   fallbackContext.save();
   fallbackContext.lineWidth = 2;
   fallbackContext.strokeStyle = accentCss;
-  fallbackContext.fillStyle = "rgba(246, 241, 232, 0.18)";
+  fallbackContext.fillStyle = "rgba(199, 210, 225, 0.18)";
 
   if (!grille.hidden) {
     drawFallbackRect([frontX, grille.y || profile.hoodPos[1], 0], 28, Math.max(16, (grille.height || 0.34) * 38), accentCss);
@@ -1460,7 +1460,7 @@ function drawFallbackRect(center, width, height, stroke) {
   const point = projectPoint(center);
   fallbackContext.save();
   fallbackContext.strokeStyle = stroke;
-  fallbackContext.fillStyle = "rgba(246, 241, 232, 0.12)";
+  fallbackContext.fillStyle = "rgba(199, 210, 225, 0.12)";
   fallbackContext.lineWidth = 2;
   fallbackContext.beginPath();
   fallbackContext.rect(point.x - width / 2 * point.scale, point.y - height / 2 * point.scale, width * point.scale, height * point.scale);

@@ -1,4 +1,4 @@
-const CACHE_NAME = "torquetune-v2-cover";
+const CACHE_NAME = "torquetune-v3-metallic-blue";
 const APP_FILES = [
   "./",
   "./index.html",

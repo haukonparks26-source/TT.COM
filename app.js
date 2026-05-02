@@ -111,7 +111,7 @@ const makeBadges = {
   Toyota: { mark: "TOY", color: "#f4f4f5", accent: "#dc2626" },
   Volkswagen: { mark: "VW", color: "#dbeafe", accent: "#1d4ed8" },
   Volvo: { mark: "VOLVO", color: "#dbeafe", accent: "#111827" },
-  Other: { mark: "CAR", color: "#58c4a6", accent: "#101314" }
+  Other: { mark: "CAR", color: "#4169e1", accent: "#f4f7fb" }
 };
 
 const vehicleModelCatalog = {
@@ -1503,7 +1503,7 @@ function updateVehicleLogo() {
   vehicleBadgePlate.setAttribute("stroke", badge.accent);
   vehicleBadgeDot.setAttribute("fill", badge.accent);
   vehicleBadgeMake.setAttribute("fill", badge.color === "#111827" ? "#f6f1e8" : badge.accent);
-  vehicleBadgeModel.setAttribute("fill", badge.color === "#111827" ? "#f6f1e8" : "#101314");
+  vehicleBadgeModel.setAttribute("fill", badge.color === "#111827" ? "#f6f1e8" : "#06080d");
 }
 
 function dispatchBlueprintVehicle() {
@@ -1868,7 +1868,7 @@ function titleCase(value) {
 
 function drawIdleWave() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "#0c0f10";
+  ctx.fillStyle = "#05070b";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.strokeStyle = "rgba(246,241,232,.18)";
   ctx.lineWidth = 2;
@@ -1884,10 +1884,10 @@ function drawLiveWave() {
   if (!analyser) return;
   const data = new Uint8Array(analyser.fftSize);
   analyser.getByteTimeDomainData(data);
-  ctx.fillStyle = "#0c0f10";
+  ctx.fillStyle = "#05070b";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.lineWidth = 3;
-  ctx.strokeStyle = "#58c4a6";
+  ctx.strokeStyle = "#4169e1";
   ctx.beginPath();
   const slice = canvas.width / data.length;
   data.forEach((value, index) => {
@@ -1897,7 +1897,7 @@ function drawLiveWave() {
   });
   ctx.stroke();
 
-  ctx.strokeStyle = "rgba(240,195,95,.55)";
+  ctx.strokeStyle = "rgba(142,177,255,.58)";
   ctx.lineWidth = 1;
   for (let i = 0; i < 8; i += 1) {
     const x = ((Date.now() / 18 + i * 110) % canvas.width);
