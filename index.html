@@ -14,10 +14,10 @@
     <meta property="og:image" content="https://torquetune.net/torquetune-cover.png" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="manifest" href="manifest.webmanifest?v=7-white-test" />
+    <link rel="manifest" href="manifest.webmanifest?v=9-parts-manual" />
     <link rel="apple-touch-icon" href="torquetune-icon-180.png" />
     <link rel="icon" href="torquetune-icon-192.png" type="image/png" />
-    <link rel="stylesheet" href="styles.css?v=7-white-test" />
+    <link rel="stylesheet" href="styles.css?v=9-parts-manual" />
   </head>
   <body>
     <main class="app-shell">
@@ -53,8 +53,7 @@
         <nav class="quick-tabs" aria-label="TorqueTune sections">
           <a href="#diagnoseSection">Diagnose</a>
           <a href="#vehicleSection">Vehicle</a>
-          <a href="#partsSection">Parts Photo</a>
-          <a href="#manualSection">Manual</a>
+          <a href="#partsSection">Parts & Manual</a>
           <a href="#mechanicSection">Mechanic</a>
           <a href="#savedSection">Saved</a>
         </nav>
@@ -343,10 +342,8 @@
             <div class="damage-preview" id="damagePreview">No damage photo selected.</div>
             <p class="tool-note" id="damageAssessment">Replacement links will use the selected vehicle and part area. Confirm fitment before buying.</p>
             <div class="link-grid" id="replacementLinks"></div>
-          </section>
 
-          <section class="tool-page" id="manualSection" aria-label="Owner manual finder">
-            <div class="tool-header">
+            <div class="tool-header embedded-tool-header">
               <p class="eyebrow">Owner Manual</p>
               <h2>Find the manual for this car</h2>
             </div>
@@ -418,11 +415,11 @@
       Created by Kai Haukon Parks | Version 1.0
     </footer>
 
-    <script src="app.js?v=7-white-test"></script>
-    <script type="module" src="blueprint.js?v=7-white-test"></script>
+    <script src="app.js?v=9-parts-manual"></script>
+    <script type="module" src="blueprint.js?v=9-parts-manual"></script>
     <script>
       if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-        navigator.serviceWorker.register("./service-worker.js?v=7-white-test").catch(() => {});
+        navigator.serviceWorker.register("./service-worker.js?v=9-parts-manual").catch(() => {});
       }
     </script>
   </body>
