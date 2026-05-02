@@ -16,6 +16,8 @@ let rotationY = -0.45;
 let rotationX = 0.12;
 let isDragging = false;
 let lastPointer = { x: 0, y: 0 };
+let pointerStart = { x: 0, y: 0, time: 0 };
+let pointerMoved = false;
 let fallbackContext = null;
 let fallbackAnimationId = 0;
 
@@ -591,6 +593,15 @@ const hotspotColors = {
   cabin: 0xc7d2e1
 };
 
+const interactiveAreaPriority = {
+  steering: 0,
+  wheel: 0,
+  transmission: 1,
+  engine: 2,
+  underbody: 3,
+  cabin: 4
+};
+
 currentProfile = vehicleProfiles.sedan;
 
 function normalize(value) {
@@ -679,6 +690,12 @@ function classifyVehicle(vehicle) {
   return profile;
 }
 
+function normalizeInteractiveZones(profile) {
+  if (profile.hotspots?.steering) {
+    profile.hotspots.steering[2] = -Math.abs(profile.hotspots.steering[2] || 0.55);
+  }
+}
+
 function paletteFor(vehicle) {
   return makePalettes[vehicle.make] || [0x4169e1, 0xc7d2e1];
 }
@@ -731,6 +748,8 @@ function initThreeBlueprint() {
   runtime.scene.add(rimLight);
 
   runtime.mode = "three";
+  runtime.raycaster = new THREE.Raycaster();
+  runtime.pointer = new THREE.Vector2();
 }
 
 function initFallbackBlueprint(reason = "3D fallback") {
@@ -744,6 +763,7 @@ function initFallbackBlueprint(reason = "3D fallback") {
 
 function setVehicle(vehicle = readVehicleFromControls()) {
   const profile = classifyVehicle(vehicle);
+  normalizeInteractiveZones(profile);
   const [primary, accent] = paletteFor(vehicle);
   const buildKey = `${profile.key || profile.name}:${primary}:${accent}:${runtime.mode}`;
   currentProfile = profile;
@@ -1153,8 +1173,8 @@ function addIssueZones(profile) {
     [profile.hotspots.transmission?.[0] || 0.25, 0.42, 0]
   ]]);
   addIssueZone("steering", [[
-    [0.52, 0.42, 0.52],
-    [profile.hotspots.steering?.[0] || 0.7, profile.hotspots.steering?.[1] || 0.95, bounds.sideZ * 0.55]
+    [0.78, 0.68, 0.88],
+    [profile.hotspots.steering?.[0] || 0.7, profile.hotspots.steering?.[1] || 0.95, -bounds.sideZ * 0.55]
   ]]);
   addIssueZone("cabin", [[
     [profile.cabin[0] * 0.92, profile.cabin[1] * 0.86, profile.cabin[2] * 0.9],
@@ -1181,6 +1201,7 @@ function addIssueZone(area, specs) {
       new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.08 })
     );
     mesh.position.set(...position);
+    mesh.userData.blueprintArea = area;
     edges.position.copy(mesh.position);
     group.add(mesh, edges);
     return { mesh, edges };
@@ -1202,6 +1223,8 @@ function addHotspots(profile) {
       new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.72 })
     );
     ring.rotation.x = Math.PI / 2;
+    glow.userData.blueprintArea = area;
+    ring.userData.blueprintArea = area;
     group.position.set(...position);
     group.add(glow, ring);
     runtime.vehicleGroup.add(group);
@@ -1233,6 +1256,67 @@ function setActiveArea(area = "engine") {
     button.setAttribute("aria-pressed", String(button.dataset.blueprintArea === activeArea));
   });
   drawFallback();
+}
+
+function selectArea(area) {
+  if (!currentProfile.hotspots[area]) return;
+  setActiveArea(area);
+  window.dispatchEvent(new CustomEvent("torquetune:blueprint-select", { detail: { area } }));
+}
+
+function selectAreaFromPointer(event) {
+  const area = runtime.mode === "three"
+    ? areaFromThreePointer(event)
+    : areaFromFallbackPointer(event);
+  if (area) selectArea(area);
+}
+
+function areaFromThreePointer(event) {
+  if (!runtime.raycaster || !runtime.pointer || !runtime.camera) return "";
+
+  const rect = canvas.getBoundingClientRect();
+  runtime.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  runtime.pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  runtime.raycaster.setFromCamera(runtime.pointer, runtime.camera);
+  runtime.scene.updateMatrixWorld(true);
+
+  const interactiveObjects = [];
+  Object.values(issueZones).forEach((zone) => {
+    zone.items.forEach(({ mesh }) => interactiveObjects.push(mesh));
+  });
+  Object.values(hotspots).forEach((hotspot) => {
+    interactiveObjects.push(hotspot.glow, hotspot.ring);
+  });
+
+  const hit = runtime.raycaster
+    .intersectObjects(interactiveObjects, false)
+    .filter((intersection) => intersection.object.userData.blueprintArea)
+    .sort((a, b) => {
+      const areaA = a.object.userData.blueprintArea;
+      const areaB = b.object.userData.blueprintArea;
+      const priorityA = interactiveAreaPriority[areaA] ?? 10;
+      const priorityB = interactiveAreaPriority[areaB] ?? 10;
+      return priorityA === priorityB ? a.distance - b.distance : priorityA - priorityB;
+    })[0];
+
+  return hit?.object.userData.blueprintArea || "";
+}
+
+function areaFromFallbackPointer(event) {
+  const rect = canvas.getBoundingClientRect();
+  const pointer = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+  let closest = { area: "", distance: Infinity };
+
+  Object.entries(currentProfile.hotspots).forEach(([area, position]) => {
+    const point = projectPoint(position);
+    const distance = Math.hypot(point.x - pointer.x, point.y - pointer.y);
+    if (distance < closest.distance) closest = { area, distance };
+  });
+
+  return closest.distance < 58 ? closest.area : "";
 }
 
 function resize() {
@@ -1536,6 +1620,8 @@ function hexWithAlpha(color, alpha) {
 function onPointerDown(event) {
   isDragging = true;
   lastPointer = { x: event.clientX, y: event.clientY };
+  pointerStart = { x: event.clientX, y: event.clientY, time: performance.now() };
+  pointerMoved = false;
   canvas.classList.add("is-dragging");
   canvas.setPointerCapture?.(event.pointerId);
 }
@@ -1544,6 +1630,9 @@ function onPointerMove(event) {
   if (!isDragging) return;
   const dx = event.clientX - lastPointer.x;
   const dy = event.clientY - lastPointer.y;
+  const totalDx = event.clientX - pointerStart.x;
+  const totalDy = event.clientY - pointerStart.y;
+  if (Math.hypot(totalDx, totalDy) > 7) pointerMoved = true;
   rotationY += dx * 0.008;
   rotationX = Math.max(-0.32, Math.min(0.52, rotationX + dy * 0.006));
   lastPointer = { x: event.clientX, y: event.clientY };
@@ -1551,7 +1640,18 @@ function onPointerMove(event) {
 }
 
 function onPointerUp(event) {
+  const distance = Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y);
+  const elapsed = performance.now() - pointerStart.time;
+  const shouldSelect = !pointerMoved && distance < 8 && elapsed < 650;
   isDragging = false;
+  canvas.classList.remove("is-dragging");
+  canvas.releasePointerCapture?.(event.pointerId);
+  if (shouldSelect) selectAreaFromPointer(event);
+}
+
+function onPointerCancel(event) {
+  isDragging = false;
+  pointerMoved = false;
   canvas.classList.remove("is-dragging");
   canvas.releasePointerCapture?.(event.pointerId);
 }
@@ -1573,8 +1673,7 @@ function bindEvents() {
     button.setAttribute("aria-pressed", "false");
     button.addEventListener("click", () => {
       const area = button.dataset.blueprintArea;
-      setActiveArea(area);
-      window.dispatchEvent(new CustomEvent("torquetune:blueprint-select", { detail: { area } }));
+      selectArea(area);
     });
   });
 
@@ -1604,8 +1703,8 @@ function bindEvents() {
   canvas.addEventListener("pointerdown", onPointerDown);
   canvas.addEventListener("pointermove", onPointerMove);
   canvas.addEventListener("pointerup", onPointerUp);
-  canvas.addEventListener("pointercancel", onPointerUp);
-  canvas.addEventListener("pointerleave", onPointerUp);
+  canvas.addEventListener("pointercancel", onPointerCancel);
+  canvas.addEventListener("pointerleave", onPointerCancel);
 
   if (window.ResizeObserver) {
     new ResizeObserver(resize).observe(canvas);
