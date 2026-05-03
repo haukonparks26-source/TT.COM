@@ -1188,10 +1188,14 @@ function addIssueZone(area, specs) {
   const items = specs.map(([size, position]) => {
     const mesh = new THREE.Mesh(
       new THREE.BoxGeometry(...size),
-      new THREE.MeshBasicMaterial({
+      new THREE.MeshStandardMaterial({
         color,
         transparent: true,
         opacity: 0.012,
+        metalness: 0.08,
+        roughness: 0.18,
+        emissive: color,
+        emissiveIntensity: 0.02,
         depthWrite: false,
         side: THREE.DoubleSide
       })
@@ -1246,8 +1250,13 @@ function setActiveArea(area = "engine") {
     Object.entries(issueZones).forEach(([key, zone]) => {
       const isActive = key === activeArea;
       zone.items.forEach(({ mesh, edges }) => {
-        mesh.material.opacity = isActive ? 0.18 : 0.012;
-        edges.material.opacity = isActive ? 0.92 : 0.08;
+        mesh.material.transparent = !isActive;
+        mesh.material.opacity = isActive ? 1 : 0.012;
+        mesh.material.depthWrite = isActive;
+        mesh.material.emissiveIntensity = isActive ? 0.42 : 0.02;
+        mesh.material.needsUpdate = true;
+        mesh.scale.setScalar(isActive ? 1.02 : 1);
+        edges.material.opacity = isActive ? 1 : 0.08;
       });
     });
   }
@@ -1349,9 +1358,11 @@ function animate(time = 0) {
     }
     const activeZone = issueZones[activeArea];
     if (activeZone) {
-      const opacity = 0.14 + Math.sin(time * 0.006) * 0.04;
+      const pulse = 1.025 + Math.sin(time * 0.006) * 0.018;
+      const glow = 0.38 + Math.sin(time * 0.006) * 0.12;
       activeZone.items.forEach(({ mesh }) => {
-        mesh.material.opacity = Math.max(0.08, opacity);
+        mesh.scale.setScalar(pulse);
+        mesh.material.emissiveIntensity = glow;
       });
     }
 

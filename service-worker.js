@@ -1,4 +1,4 @@
-const CACHE_NAME = "torquetune-v9-parts-manual";
+const CACHE_NAME = "torquetune-v10-solid-highlight";
 const APP_FILES = [
   "./",
   "./index.html",
